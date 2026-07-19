@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Workshop</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root{
+  --navy:#101826;
+  --navy2:#16202e;
+  --paper:#eef2ee;
+  --line:#2b3a4d;
+  --cyan:#5fd4d6;
+  --amber:#e8a23d;
+  --ink:#0d1117;
+  --ink-soft:#c9d3dc;
+  --muted:#7a8a99;
+  --danger:#e0665a;
+  --radius:2px;
+}
+[data-theme="light"]{
+  --navy:#eef2ee;
+  --navy2:#e2e8e2;
+  --paper:#101826;
+  --ink:#eef2ee;
+  --ink-soft:#16202e;
+  --line:#c3cdc3;
+  --muted:#5a6a70;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--navy);
+  color:var(--ink-soft);
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size:28px 28px;
+  background-attachment:fixed;
+  transition:background .2s,color .2s;
+}
+[data-theme="light"] body{ color:#16202e; }
+a{color:inherit;}
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{
+  background:var(--navy2);
+  border-right:1px solid var(--line);
+  padding:20px 14px;
+  position:sticky;top:0;height:100vh;
+  display:flex;flex-direction:column;gap:4px;
+}
+.brand{
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--cyan);margin-bottom:18px;padding:0 8px;
+}
+.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.08em;margin-top:2px;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:var(--radius);cursor:pointer;
+  font-size:13.5px;color:var(--ink-soft);border-left:2px solid transparent;
+}
+.nav-item:hover{background:rgba(95,212,214,.08);}
+.nav-item.active{background:rgba(95,212,214,.12);border-left:2px solid var(--cyan);color:var(--cyan);}
+.nav-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);width:18px;}
+.sidebar-foot{margin-top:auto;padding:10px 8px;font-size:10.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;border-top:1px solid var(--line);}
+
+/* MAIN */
+.main{padding:26px 34px 60px;max-width:1080px;}
+.topbar{display:flex;align-items:center;gap:14px;margin-bottom:24px;}
+.search{
+  flex:1;display:flex;align-items:center;gap:8px;
+  background:var(--navy2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:9px 12px;
+}
+.search input{background:none;border:none;outline:none;color:var(--ink-soft);font-family:'Inter';font-size:13px;width:100%;}
+.icon-btn{
+  background:var(--navy2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:9px 12px;cursor:pointer;color:var(--ink-soft);font-size:13px;font-family:'JetBrains Mono';
+}
+.icon-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+
+h1.page-title{
+  font-family:'JetBrains Mono',monospace;font-weight:700;font-size:22px;
+  color:var(--ink-soft);margin:0 0 4px;letter-spacing:-.01em;
+}
+.page-sub{color:var(--muted);font-size:13px;margin:0 0 26px;}
+
+.panel{
+  background:var(--navy2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:20px;margin-bottom:18px;
+}
+.panel-title{font-family:'JetBrains Mono';font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);margin:0 0 14px;display:flex;justify-content:space-between;align-items:center;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+@media(max-width:800px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+.stat{display:flex;flex-direction:column;gap:2px;}
+.stat .num{font-family:'JetBrains Mono';font-size:26px;color:var(--cyan);}
+.stat .lbl{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+
+input,textarea,select{
+  background:var(--navy);border:1px solid var(--line);border-radius:var(--radius);
+  color:var(--ink-soft);font-family:'Inter';font-size:13px;padding:8px 10px;width:100%;
+}
+textarea{resize:vertical;font-family:'JetBrains Mono';}
+label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;}
+.field{margin-bottom:12px;}
+.btn{
+  background:var(--cyan);color:var(--ink);border:none;border-radius:var(--radius);
+  padding:9px 16px;font-family:'JetBrains Mono';font-size:12px;font-weight:700;cursor:pointer;
+  text-transform:uppercase;letter-spacing:.04em;
+}
+.btn.secondary{background:none;border:1px solid var(--line);color:var(--ink-soft);}
+.btn.danger{background:var(--danger);}
+.row{display:flex;gap:10px;flex-wrap:wrap;}
+
+.list-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius);margin-bottom:8px;
+  background:var(--navy);
+}
+.tag{font-family:'JetBrains Mono';font-size:10px;padding:2px 7px;border:1px solid var(--line);border-radius:12px;color:var(--muted);}
+.tag.cyan{color:var(--cyan);border-color:var(--cyan);}
+.tag.amber{color:var(--amber);border-color:var(--amber);}
+.tag.danger{color:var(--danger);border-color:var(--danger);}
+.muted{color:var(--muted);font-size:12px;}
+.x-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;}
+.x-btn:hover{color:var(--danger);}
+
+.note-card{background:var(--navy);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:10px;cursor:pointer;}
+.note-card:hover{border-color:var(--cyan);}
+.note-card h4{margin:0 0 6px;font-size:14px;font-family:'JetBrains Mono';}
+.note-card p{margin:0;font-size:12px;color:var(--muted);white-space:pre-wrap;max-height:60px;overflow:hidden;}
+
+.md-preview h1,.md-preview h2,.md-preview h3{color:var(--cyan);font-family:'JetBrains Mono';}
+.md-preview code{background:var(--navy);padding:1px 5px;border-radius:2px;font-family:'JetBrains Mono';}
+.md-preview{font-size:13.5px;line-height:1.6;}
+
+.hidden{display:none !important;}
+.calc-result{font-family:'JetBrains Mono';font-size:20px;color:var(--cyan);margin-top:10px;}
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+</style>
+</head>
+<body data-theme="dark">
+<div class="app">
+  <div class="sidebar">
+    <div class="brand">Workshop<small>student build v1</small></div>
+    <div id="nav"></div>
+    <div class="sidebar-foot">JetBrains / Inter<br>local session only</div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <div class="search"><span>&#128269;</span><input id="globalSearch" placeholder="Search subjects, notes, formulas, bookmarks..."></div>
+      <button class="icon-btn" id="themeToggle">&#9789; theme</button>
+    </div>
+    <div id="view"></div>
+  </div>
+</div>
+
+<script>
+// ---------- IN-MEMORY STATE ----------
+let state = {
+  page: 'dashboard',
+  subjects: [
+    {id:1,name:'Statics & Mechanics',color:'#5fd4d6',credits:3},
+    {id:2,name:'Calculus II',color:'#e8a23d',credits:4},
+    {id:3,name:'Materials Science',color:'#e0665a',credits:3},
+  ],
+  notes: [
+    {id:1,subjectId:1,title:'Shear & Moment Diagrams',body:'# Shear & Moment\n\nDraw **V** and **M** diagrams from load cases.\n\n- Point loads shift V by the load\n- Distributed loads slope V linearly\n\n`M = ∫V dx`',updated:'2026-07-14'},
+    {id:2,subjectId:2,title:'Series Convergence',body:'# Convergence Tests\n\n1. Ratio test\n2. Root test\n3. Comparison test\n\nUse ratio test first for factorials.',updated:'2026-07-16'},
+  ],
+  pdfs: [
+    {id:1,name:'Statics_Chapter4.pdf',subjectId:1,size:'2.1 MB'},
+    {id:2,name:'Calc2_SeriesNotes.pdf',subjectId:2,size:'860 KB'},
+  ],
+  assignments: [
+    {id:1,title:'Beam Loading Problem Set',subjectId:1,due:'2026-07-24',type:'Assignment',done:false},
+    {id:2,title:'Midterm Exam',subjectId:2,due:'2026-08-02',type:'Exam',done:false},
+    {id:3,title:'Lab Report — Tensile Test',subjectId:3,due:'2026-07-21',type:'Assignment',done:true},
+  ],
+  grades: [
+    {id:1,subjectId:1,name:'Statics & Mechanics',credits:3,grade:'A-'},
+    {id:2,subjectId:2,name:'Calculus II',credits:4,grade:'B+'},
+    {id:3,subjectId:3,name:'Materials Science',credits:3,grade:'A'},
+  ],
+  formulas: [
+    {id:1,category:'Mechanics',name:'Bending Stress',formula:'σ = M·c / I'},
+    {id:2,category:'Mechanics',name:'Shear Stress (beam)',formula:'τ = V·Q / (I·b)'},
+    {id:3,category:'Mechanics',name:'Deflection (cantilever, point load)',formula:'δ = P·L³ / (3EI)'},
+    {id:4,category:'Calculus',name:'Taylor Series',formula:'f(x) = Σ fⁿ(a)/n! · (x−a)ⁿ'},
+    {id:5,category:'Thermo',name:'Ideal Gas Law',formula:'PV = nRT'},
+    {id:6,category:'Materials',name:"Hooke's Law",formula:'σ = E·ε'},
+  ],
+  files: [
+    {id:1,name:'truss_analysis_v2.dwg',project:'Bridge Design Studio',date:'2026-07-10'},
+    {id:2,name:'final_report_draft.docx',project:'Materials Lab',date:'2026-07-15'},
+  ],
+  bookmarks: [
+    {id:1,title:'Engineering Toolbox',url:'https://www.engineeringtoolbox.com',tag:'reference'},
+    {id:2,title:'Paul\'s Online Math Notes',url:'https://tutorial.math.lamar.edu',tag:'calc'},
+    {id:3,title:'MIT OCW — Mechanics of Materials',url:'https://ocw.mit.edu',tag:'course'},
+  ],
+  activeNote: null,
+  nextId: {subjects:4,notes:3,pdfs:3,assignments:4,grades:4,formulas:7,files:3,bookmarks:4},
+};
+
+const gpaPoints = {'A':4,'A-':3.7,'B+':3.3,'B':3,'B-':2.7,'C+':2.3,'C':2,'C-':1.7,'D':1,'F':0};
+
+const nav = [
+  {id:'dashboard',label:'Dashboard',icon:'01'},
+  {id:'subjects',label:'Subjects',icon:'02'},
+  {id:'notes',label:'Notes',icon:'03'},
+  {id:'pdfs',label:'PDF Library',icon:'04'},
+  {id:'tracker',label:'Assignments & Exams',icon:'05'},
+  {id:'gpa',label:'GPA Calculator',icon:'06'},
+  {id:'calc',label:'Eng. Calculators',icon:'07'},
+  {id:'formulas',label:'Formula Library',icon:'08'},
+  {id:'files',label:'Project Files',icon:'09'},
+  {id:'bookmarks',label:'Bookmarks',icon:'10'},
+];
+
+function subjName(id){ const s=state.subjects.find(s=>s.id===id); return s?s.name:'—'; }
+function subjColor(id){ const s=state.subjects.find(s=>s.id===id); return s?s.color:'#7a8a99'; }
+function uid(key){ return state.nextId[key]++; }
+function go(page){ state.page=page; render(); }
+
+function renderNav(){
+  document.getElementById('nav').innerHTML = nav.map(n=>`
+    <div class="nav-item ${state.page===n.id?'active':''}" onclick="go('${n.id}')">
+      <span class="nav-num">${n.icon}</span>${n.label}
+    </div>`).join('');
+}
+
+// ---------- simple markdown ----------
+function md(src){
+  return src
+    .replace(/^### (.*)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.*)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.*)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')
+    .replace(/\*(.*?)\*/g,'<i>$1</i>')
+    .replace(/`(.*?)`/g,'<code>$1</code>')
+    .replace(/^- (.*)$/gm,'<li>$1</li>')
+    .replace(/^\d\. (.*)$/gm,'<li>$1</li>')
+    .replace(/\n\n/g,'<br><br>');
+}
+
+// ---------- PAGES ----------
+function pageDashboard(){
+  const openTasks = state.assignments.filter(a=>!a.done).sort((a,b)=>a.due.localeCompare(b.due));
+  const totalCredits = state.grades.reduce((s,g)=>s+g.credits,0);
+  const gpa = totalCredits ? (state.grades.reduce((s,g)=>s+g.credits*gpaPoints[g.grade],0)/totalCredits).toFixed(2) : '—';
+  return `
+  <h1 class="page-title">Dashboard</h1>
+  <p class="page-sub">Overview of your current term.</p>
+  <div class="grid-3">
+    <div class="panel stat"><div class="num">${state.subjects.length}</div><div class="lbl">Subjects</div></div>
+    <div class="panel stat"><div class="num">${openTasks.length}</div><div class="lbl">Open Tasks</div></div>
+    <div class="panel stat"><div class="num">${gpa}</div><div class="lbl">Current GPA</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">Upcoming <span class="muted" style="text-transform:none;">${openTasks.length} pending</span></div>
+      ${openTasks.slice(0,5).map(a=>`
+        <div class="list-item">
+          <div><div style="font-size:13px;">${a.title}</div><div class="muted">${subjName(a.subjectId)} — due ${a.due}</div></div>
+          <span class="tag ${a.type==='Exam'?'danger':'cyan'}">${a.type}</span>
+        </div>`).join('') || '<p class="muted">Nothing pending. Nice.</p>'}
+    </div>
+    <div class="panel">
+      <div class="panel-title">Recent Notes</div>
+      ${state.notes.slice(-4).reverse().map(n=>`
+        <div class="list-item" style="cursor:pointer" onclick="state.activeNote=${n.id};go('notes')">
+          <div><div style="font-size:13px;">${n.title}</div><div class="muted">${subjName(n.subjectId)} — ${n.updated}</div></div>
+        </div>`).join('') || '<p class="muted">No notes yet.</p>'}
+    </div>
+  </div>`;
+}
+
+function pageSubjects(){
+  return `
+  <h1 class="page-title">Subjects</h1>
+  <p class="page-sub">Everything is organized under a subject.</p>
+  <div class="panel">
+    <div class="panel-title">Add Subject</div>
+    <div class="row">
+      <input id="newSubName" placeholder="Subject name" style="flex:2;">
+      <input id="newSubCredits" placeholder="Credits" type="number" style="flex:1;">
+      <input id="newSubColor" type="color" value="#5fd4d6" style="width:44px;padding:2px;">
+      <button class="btn" onclick="addSubject()">Add</button>
+    </div>
+  </div>
+  <div class="grid-3">
+    ${state.subjects.map(s=>{
+      const noteCount = state.notes.filter(n=>n.subjectId===s.id).length;
+      const taskCount = state.assignments.filter(a=>a.subjectId===s.id && !a.done).length;
+      return `<div class="panel">
+        <div style="width:100%;height:4px;background:${s.color};margin:-20px -20px 14px;border-radius:2px 2px 0 0;"></div>
+        <div class="panel-title" style="color:${s.color}">${s.name}<button class="x-btn" onclick="removeItem('subjects',${s.id})">✕</button></div>
+        <div class="muted">${s.credits} credits · ${noteCount} notes · ${taskCount} open tasks</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function addSubject(){
+  const name=document.getElementById('newSubName').value.trim();
+  const credits=parseInt(document.getElementById('newSubCredits').value)||0;
+  const color=document.getElementById('newSubColor').value;
+  if(!name) return;
+  state.subjects.push({id:uid('subjects'),name,credits,color});
+  render();
+}
+
+function pageNotes(){
+  if(state.activeNote){
+    const n = state.notes.find(x=>x.id===state.activeNote);
+    return `
+    <h1 class="page-title">${n.title}</h1>
+    <p class="page-sub">${subjName(n.subjectId)} · last updated ${n.updated}</p>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-title">Markdown Source</div>
+        <textarea id="noteBody" rows="16" oninput="liveMd()">${n.body}</textarea>
+        <div class="row" style="margin-top:12px;">
+          <button class="btn" onclick="saveNote(${n.id})">Save</button>
+          <button class="btn secondary" onclick="state.activeNote=null;render()">Back</button>
+          <button class="btn danger" onclick="removeItem('notes',${n.id});state.activeNote=null;render()">Delete</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Preview</div>
+        <div class="md-preview" id="mdPreview">${md(n.body)}</div>
+      </div>
+    </div>`;
+  }
+  return `
+  <h1 class="page-title">Notes</h1>
+  <p class="page-sub">Markdown notes, grouped by subject.</p>
+  <div class="panel">
+    <div class="panel-title">New Note</div>
+    <div class="row">
+      <select id="newNoteSubject" style="flex:1;">${state.subjects.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select>
+      <input id="newNoteTitle" placeholder="Title" style="flex:2;">
+      <button class="btn" onclick="addNote()">Create</button>
+    </div>
+  </div>
+  <div class="grid-2">
+    ${state.notes.map(n=>`
+      <div class="note-card" onclick="state.activeNote=${n.id};render()">
+        <h4>${n.title}</h4>
+        <p>${n.body.replace(/[#*`]/g,'')}</p>
+        <div class="muted" style="margin-top:8px;">${subjName(n.subjectId)} · ${n.updated}</div>
+      </div>`).join('') || '<p class="muted">No notes yet.</p>'}
+  </div>`;
+}
+function addNote(){
+  const subjectId=parseInt(document.getElementById('newNoteSubject').value);
+  const title=document.getElementById('newNoteTitle').value.trim();
+  if(!title) return;
+  const id=uid('notes');
+  state.notes.push({id,subjectId,title,body:'# '+title+'\n\nStart writing...',updated:new Date().toISOString().slice(0,10)});
+  state.activeNote=id;
+  render();
+}
+function saveNote(id){
+  const n=state.notes.find(x=>x.id===id);
+  n.body=document.getElementById('noteBody').value;
+  n.updated=new Date().toISOString().slice(0,10);
+  render();
+}
+function liveMd(){
+  document.getElementById('mdPreview').innerHTML = md(document.getElementById('noteBody').value);
+}
+
+function pagePdfs(){
+  return `
+  <h1 class="page-title">PDF Library</h1>
+  <p class="page-sub">Track reference PDFs per subject. (Session-only index — re-add after reload.)</p>
+  <div class="panel">
+    <div class="panel-title">Add PDF Entry</div>
+    <div class="row">
+      <input id="newPdfName" placeholder="filename.pdf" style="flex:2;">
+      <select id="newPdfSubject" style="flex:1;">${state.subjects.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select>
+      <button class="btn" onclick="addPdf()">Add</button>
+    </div>
+  </div>
+  <div class="panel">
+    ${state.pdfs.map(p=>`
+      <div class="list-item">
+        <div>📄 ${p.name}<div class="muted">${subjName(p.subjectId)} · ${p.size}</div></div>
+        <button class="x-btn" onclick="removeItem('pdfs',${p.id})">✕</button>
+      </div>`).join('') || '<p class="muted">No PDFs indexed yet.</p>'}
+  </div>`;
+}
+function addPdf(){
+  const name=document.getElementById('newPdfName').value.trim();
+  const subjectId=parseInt(document.getElementById('newPdfSubject').value);
+  if(!name) return;
+  state.pdfs.push({id:uid('pdfs'),name,subjectId,size:'—'});
+  render();
+}
+
+function pageTracker(){
+  const sorted=[...state.assignments].sort((a,b)=>a.due.localeCompare(b.due));
+  return `
+  <h1 class="page-title">Assignment & Exam Tracker</h1>
+  <p class="page-sub">Deadlines across all subjects.</p>
+  <div class="panel">
+    <div class="panel-title">Add Item</div>
+    <div class="row">
+      <input id="newTaskTitle" placeholder="Title" style="flex:2;">
+      <select id="newTaskSubject" style="flex:1;">${state.subjects.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select>
+      <select id="newTaskType" style="flex:1;"><option>Assignment</option><option>Exam</option></select>
+      <input id="newTaskDue" type="date" style="flex:1;">
+      <button class="btn" onclick="addTask()">Add</button>
+    </div>
+  </div>
+  <div class="panel">
+    ${sorted.map(a=>`
+      <div class="list-item">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" ${a.done?'checked':''} onchange="toggleTask(${a.id})">
+          <div style="${a.done?'text-decoration:line-through;color:var(--muted);':''}">
+            ${a.title}<div class="muted">${subjName(a.subjectId)} · due ${a.due}</div>
+          </div>
+        </div>
+        <div class="row">
+          <span class="tag ${a.type==='Exam'?'danger':'cyan'}">${a.type}</span>
+          <button class="x-btn" onclick="removeItem('assignments',${a.id})">✕</button>
+        </div>
+      </div>`).join('') || '<p class="muted">Nothing tracked yet.</p>'}
+  </div>`;
+}
+function addTask(){
+  const title=document.getElementById('newTaskTitle').value.trim();
+  const subjectId=parseInt(document.getElementById('newTaskSubject').value);
+  const type=document.getElementById('newTaskType').value;
+  const due=document.getElementById('newTaskDue').value || '2026-01-01';
+  if(!title) return;
+  state.assignments.push({id:uid('assignments'),title,subjectId,type,due,done:false});
+  render();
+}
+function toggleTask(id){ const a=state.assignments.find(x=>x.id===id); a.done=!a.done; render(); }
+
+function pageGpa(){
+  const totalCredits = state.grades.reduce((s,g)=>s+g.credits,0);
+  const gpa = totalCredits ? (state.grades.reduce((s,g)=>s+g.credits*gpaPoints[g.grade],0)/totalCredits).toFixed(3) : '0.000';
+  return `
+  <h1 class="page-title">GPA Calculator</h1>
+  <p class="page-sub">Standard 4.0 scale.</p>
+  <div class="panel">
+    <div class="panel-title">Add Course</div>
+    <div class="row">
+      <input id="gpaName" placeholder="Course name" style="flex:2;">
+      <input id="gpaCredits" placeholder="Credits" type="number" style="flex:1;">
+      <select id="gpaGrade" style="flex:1;">${Object.keys(gpaPoints).map(g=>`<option>${g}</option>`).join('')}</select>
+      <button class="btn" onclick="addGrade()">Add</button>
+    </div>
+  </div>
+  <div class="panel">
+    ${state.grades.map(g=>`
+      <div class="list-item">
+        <div>${g.name}<div class="muted">${g.credits} credits</div></div>
+        <div class="row" style="align-items:center;">
+          <span class="tag cyan">${g.grade}</span>
+          <button class="x-btn" onclick="removeItem('grades',${g.id})">✕</button>
+        </div>
+      </div>`).join('')}
+  </div>
+  <div class="panel">
+    <div class="panel-title">Result</div>
+    <div class="calc-result">GPA: ${gpa}</div>
+    <div class="muted">${totalCredits} total credits</div>
+  </div>`;
+}
+function addGrade(){
+  const name=document.getElementById('gpaName').value.trim();
+  const credits=parseFloat(document.getElementById('gpaCredits').value)||0;
+  const grade=document.getElementById('gpaGrade').value;
+  if(!name||!credits) return;
+  state.grades.push({id:uid('grades'),subjectId:null,name,credits,grade});
+  render();
+}
+
+function pageCalc(){
+  return `
+  <h1 class="page-title">Engineering Calculators</h1>
+  <p class="page-sub">Unit conversion, section properties, beam basics.</p>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">Unit Converter — Length</div>
+      <div class="field"><label>Value</label><input id="uc_val" type="number" value="1" oninput="calcUnit()"></div>
+      <div class="row">
+        <div class="field" style="flex:1;"><label>From</label><select id="uc_from" onchange="calcUnit()">${['m','ft','in','mm','cm','km','mi'].map(u=>`<option>${u}</option>`).join('')}</select></div>
+        <div class="field" style="flex:1;"><label>To</label><select id="uc_to" onchange="calcUnit()">${['ft','m','in','mm','cm','km','mi'].map(u=>`<option>${u}</option>`).join('')}</select></div>
+      </div>
+      <div class="calc-result" id="uc_result">—</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Rectangle: Area & Volume</div>
+      <div class="row">
+        <div class="field" style="flex:1;"><label>Width (m)</label><input id="av_w" type="number" value="1" oninput="calcAV()"></div>
+        <div class="field" style="flex:1;"><label>Height (m)</label><input id="av_h" type="number" value="1" oninput="calcAV()"></div>
+        <div class="field" style="flex:1;"><label>Depth (m, opt.)</label><input id="av_d" type="number" placeholder="—" oninput="calcAV()"></div>
+      </div>
+      <div class="calc-result" id="av_result">—</div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">Beam Basics — Simply Supported, Point Load at Midspan</div>
+    <div class="grid-3">
+      <div class="field"><label>Load P (N)</label><input id="beam_p" type="number" value="1000" oninput="calcBeam()"></div>
+      <div class="field"><label>Span L (m)</label><input id="beam_l" type="number" value="4" oninput="calcBeam()"></div>
+      <div class="field"><label>E·I (N·m²)</label><input id="beam_ei" type="number" value="50000" oninput="calcBeam()"></div>
+    </div>
+    <div id="beam_result" class="calc-result">—</div>
+  </div>`;
+}
+const lengthToM = {m:1,ft:0.3048,in:0.0254,mm:0.001,cm:0.01,km:1000,mi:1609.344};
+function calcUnit(){
+  const val=parseFloat(document.getElementById('uc_val').value)||0;
+  const from=document.getElementById('uc_from').value, to=document.getElementById('uc_to').value;
+  const meters=val*lengthToM[from];
+  const result=meters/lengthToM[to];
+  document.getElementById('uc_result').textContent = `${val} ${from} = ${result.toFixed(5)} ${to}`;
+}
+function calcAV(){
+  const w=parseFloat(document.getElementById('av_w').value)||0;
+  const h=parseFloat(document.getElementById('av_h').value)||0;
+  const d=parseFloat(document.getElementById('av_d').value);
+  const area=w*h;
+  let txt=`Area: ${area.toFixed(4)} m²`;
+  if(d){ txt+=` · Volume: ${(area*d).toFixed(4)} m³`; }
+  document.getElementById('av_result').textContent=txt;
+}
+function calcBeam(){
+  const P=parseFloat(document.getElementById('beam_p').value)||0;
+  const L=parseFloat(document.getElementById('beam_l').value)||0;
+  const EI=parseFloat(document.getElementById('beam_ei').value)||1;
+  const Mmax = P*L/4;
+  const Vmax = P/2;
+  const delta = (P*Math.pow(L,3))/(48*EI);
+  document.getElementById('beam_result').innerHTML =
+    `M_max: ${Mmax.toFixed(2)} N·m &nbsp;·&nbsp; V_max: ${Vmax.toFixed(2)} N &nbsp;·&nbsp; δ_max: ${delta.toFixed(6)} m`;
+}
+
+function pageFormulas(query){
+  const q=(query||'').toLowerCase();
+  const cats=[...new Set(state.formulas.map(f=>f.category))];
+  const filtered = q ? state.formulas.filter(f=>f.name.toLowerCase().includes(q)||f.formula.toLowerCase().includes(q)) : state.formulas;
+  return `
+  <h1 class="page-title">Formula Library</h1>
+  <p class="page-sub">Quick reference, searchable.</p>
+  <div class="panel">
+    <div class="panel-title">Add Formula</div>
+    <div class="row">
+      <input id="newFCat" placeholder="Category" style="flex:1;">
+      <input id="newFName" placeholder="Name" style="flex:1;">
+      <input id="newFFormula" placeholder="Formula" style="flex:2;">
+      <button class="btn" onclick="addFormula()">Add</button>
+    </div>
+  </div>
+  ${cats.map(c=>{
+    const items=filtered.filter(f=>f.category===c);
+    if(!items.length) return '';
+    return `<div class="panel">
+      <div class="panel-title">${c}</div>
+      ${items.map(f=>`
+        <div class="list-item">
+          <div>${f.name}<div class="muted" style="font-family:'JetBrains Mono';">${f.formula}</div></div>
+          <button class="x-btn" onclick="removeItem('formulas',${f.id})">✕</button>
+        </div>`).join('')}
+    </div>`;
+  }).join('') || '<p class="muted">No matches.</p>'}`;
+}
+function addFormula(){
+  const category=document.getElementById('newFCat').value.trim()||'General';
+  const name=document.getElementById('newFName').value.trim();
+  const formula=document.getElementById('newFFormula').value.trim();
+  if(!name||!formula) return;
+  state.formulas.push({id:uid('formulas'),category,name,formula});
+  render();
+}
+
+function pageFiles(){
+  return `
+  <h1 class="page-title">Project Files</h1>
+  <p class="page-sub">Index of project deliverables (session-only).</p>
+  <div class="panel">
+    <div class="panel-title">Add File Entry</div>
+    <div class="row">
+      <input id="newFileName" placeholder="filename.ext" style="flex:2;">
+      <input id="newFileProject" placeholder="Project name" style="flex:2;">
+      <button class="btn" onclick="addFile()">Add</button>
+    </div>
+  </div>
+  <div class="panel">
+    ${state.files.map(f=>`
+      <div class="list-item">
+        <div>🗂 ${f.name}<div class="muted">${f.project} · ${f.date}</div></div>
+        <button class="x-btn" onclick="removeItem('files',${f.id})">✕</button>
+      </div>`).join('') || '<p class="muted">No files indexed yet.</p>'}
+  </div>`;
+}
+function addFile(){
+  const name=document.getElementById('newFileName').value.trim();
+  const project=document.getElementById('newFileProject').value.trim()||'Untitled';
+  if(!name) return;
+  state.files.push({id:uid('files'),name,project,date:new Date().toISOString().slice(0,10)});
+  render();
+}
+
+function pageBookmarks(){
+  return `
+  <h1 class="page-title">Bookmarks / Resources</h1>
+  <p class="page-sub">Links worth keeping.</p>
+  <div class="panel">
+    <div class="panel-title">Add Bookmark</div>
+    <div class="row">
+      <input id="newBmTitle" placeholder="Title" style="flex:1;">
+      <input id="newBmUrl" placeholder="https://..." style="flex:2;">
+      <input id="newBmTag" placeholder="tag" style="flex:1;">
+      <button class="btn" onclick="addBookmark()">Add</button>
+    </div>
+  </div>
+  <div class="panel">
+    ${state.bookmarks.map(b=>`
+      <div class="list-item">
+        <div><a href="${b.url}" target="_blank">${b.title}</a><div class="muted">${b.url}</div></div>
+        <div class="row" style="align-items:center;">
+          <span class="tag amber">${b.tag}</span>
+          <button class="x-btn" onclick="removeItem('bookmarks',${b.id})">✕</button>
+        </div>
+      </div>`).join('') || '<p class="muted">No bookmarks yet.</p>'}
+  </div>`;
+}
+function addBookmark(){
+  const title=document.getElementById('newBmTitle').value.trim();
+  const url=document.getElementById('newBmUrl').value.trim();
+  const tag=document.getElementById('newBmTag').value.trim()||'general';
+  if(!title||!url) return;
+  state.bookmarks.push({id:uid('bookmarks'),title,url,tag});
+  render();
+}
+
+function removeItem(key,id){
+  state[key]=state[key].filter(x=>x.id!==id);
+  render();
+}
+
+// ---------- GLOBAL SEARCH ----------
+function globalSearch(q){
+  q=q.toLowerCase();
+  if(!q) return null;
+  const results=[];
+  state.subjects.forEach(s=>{ if(s.name.toLowerCase().includes(q)) results.push({type:'Subject',label:s.name,go:()=>go('subjects')}); });
+  state.notes.forEach(n=>{ if(n.title.toLowerCase().includes(q)||n.body.toLowerCase().includes(q)) results.push({type:'Note',label:n.title,go:()=>{state.activeNote=n.id;go('notes');}}); });
+  state.formulas.forEach(f=>{ if(f.name.toLowerCase().includes(q)||f.formula.toLowerCase().includes(q)) results.push({type:'Formula',label:f.name,go:()=>go('formulas')}); });
+  state.bookmarks.forEach(b=>{ if(b.title.toLowerCase().includes(q)) results.push({type:'Bookmark',label:b.title,go:()=>go('bookmarks')}); });
+  state.assignments.forEach(a=>{ if(a.title.toLowerCase().includes(q)) results.push({type:'Task',label:a.title,go:()=>go('tracker')}); });
+  return results;
+}
+
+// ---------- RENDER ----------
+function render(){
+  renderNav();
+  const v=document.getElementById('view');
+  switch(state.page){
+    case 'dashboard': v.innerHTML=pageDashboard(); break;
+    case 'subjects': v.innerHTML=pageSubjects(); break;
+    case 'notes': v.innerHTML=pageNotes(); break;
+    case 'pdfs': v.innerHTML=pagePdfs(); break;
+    case 'tracker': v.innerHTML=pageTracker(); break;
+    case 'gpa': v.innerHTML=pageGpa(); break;
+    case 'calc': v.innerHTML=pageCalc(); calcUnit(); calcAV(); calcBeam(); break;
+    case 'formulas': v.innerHTML=pageFormulas(); break;
+    case 'files': v.innerHTML=pageFiles(); break;
+    case 'bookmarks': v.innerHTML=pageBookmarks(); break;
+    case 'search': v.innerHTML=renderSearchResults(); break;
+  }
+}
+function renderSearchResults(){
+  const q=document.getElementById('globalSearch')?document.getElementById('globalSearch').value:'';
+  const results=globalSearch(q)||[];
+  window.__searchResults = results;
+  return `
+  <h1 class="page-title">Search Results</h1>
+  <p class="page-sub">"${q}" — ${results.length} match(es)</p>
+  <div class="panel">
+    ${results.map((r,i)=>`
+      <div class="list-item" style="cursor:pointer" onclick="window.__searchResults[${i}].go()">
+        <div>${r.label}</div><span class="tag cyan">${r.type}</span>
+      </div>`).join('') || '<p class="muted">No matches.</p>'}
+  </div>`;
+}
+
+document.getElementById('globalSearch').addEventListener('input',e=>{
+  if(e.target.value.trim()){ state.page='search'; }
+  else if(state.page==='search'){ state.page='dashboard'; }
+  render();
+  document.getElementById('globalSearch').value=e.target.value;
+  document.getElementById('globalSearch').focus();
+});
+
+document.getElementById('themeToggle').addEventListener('click',()=>{
+  const b=document.body;
+  b.dataset.theme = b.dataset.theme==='dark' ? 'light' : 'dark';
+});
+
+render();
+</script>
+</body>
+</html>
