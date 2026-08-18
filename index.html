@@ -2,1220 +2,1147 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1c1d1b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Workshop">
 <title>Workshop</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Patrick+Hand&family=Courier+Prime:wght@400;700&display=swap');
 
+/* ── CHALKBOARD ─────────────────────────────
+   board  slate green   chalk  bone white
+   accents: yellow / coral / sky / mint chalk
+   display Caveat · body Patrick Hand · data Courier Prime
+   ────────────────────────────────────────── */
 :root{
-  --navy:#12151f;
-  --navy2:#252c40;
-  --paper:#eef2ee;
-  --line:#3a4260;
-  --cyan:#7fe0d6;
-  --coral:#ff9d81;
-  --amber:#f0b860;
-  --ink:#161c28;
-  --ink-soft:#dbe2ea;
-  --muted:#8b96ab;
-  --danger:#ff8a80;
-  --radius:14px;
+  --board:#1c1d1b;
+  --board-dark:#131412;
+  --slate:#262724;
+  --wood:#8a5a32;
+  --wood-dark:#57351c;
+  --chalk:#f4f1e6;
+  --chalk-dim:#9d9c93;
+  --cyan:#9fdccf;
+  --coral:#ffb09c;
+  --amber:#ffdf94;
+  --danger:#ff9080;
+  --ink:var(--chalk);
+  --muted:var(--chalk-dim);
+  --navy:var(--board-dark);
+  --navy2:var(--slate);
+  --line:rgba(244,241,230,.20);
+  --radius:4px;
+  --glow:0 0 2px rgba(244,241,230,.30);
+  --font-display:'Caveat',cursive;
+  --font-body:'Patrick Hand',cursive;
+  --font-data:'Courier Prime',monospace;
 }
+/* whiteboard mode */
 [data-theme="light"]{
-  --navy:#f2ece2;
-  --navy2:#ffffff;
-  --paper:#101826;
-  --ink:#fbf7f2;
-  --ink-soft:#2c3446;
-  --line:#e7ddd0;
-  --muted:#8a8577;
+  --board:#f6f6f2;
+  --board-dark:#eeeee8;
+  --slate:#ffffff;
+  --wood:#b9bcc0;
+  --wood-dark:#8f9398;
+  --chalk:#26302c;
+  --chalk-dim:#6e7873;
+  --cyan:#128577;
+  --coral:#d1512f;
+  --amber:#a87400;
+  --danger:#c0392b;
+  --line:rgba(38,48,44,.20);
+  --glow:none;
 }
+
 *{box-sizing:border-box;}
-html,body{margin:0;padding:0;height:100%;}
+html,body{margin:0;padding:0;min-height:100%;}
 body{
-  font-family:'Inter',sans-serif;
-  background:var(--navy);
-  color:var(--ink-soft);
+  font-family:var(--font-body);
+  font-size:16px;
+  background:var(--board);
+  color:var(--ink);
+  text-shadow:var(--glow);
+  /* eraser smudges + faint ruled lines */
   background-image:
-    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
-  background-size:28px 28px;
+    radial-gradient(ellipse 60% 30% at 18% 22%, rgba(244,241,230,.070), transparent 70%),
+    radial-gradient(ellipse 45% 25% at 78% 62%, rgba(244,241,230,.055), transparent 70%),
+    radial-gradient(ellipse 70% 20% at 45% 88%, rgba(244,241,230,.045), transparent 70%),
+    repeating-linear-gradient(0deg, rgba(244,241,230,.022) 0 1px, transparent 1px 34px);
   background-attachment:fixed;
-  transition:background .2s,color .2s;
 }
-[data-theme="light"] body{ color:#16202e; background-image:
-    linear-gradient(rgba(0,0,0,.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px); }
-a{color:inherit;}
-.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh;}
+[data-theme="light"] body{
+  background-image:repeating-linear-gradient(0deg, rgba(38,48,44,.035) 0 1px, transparent 1px 34px);
+}
+a{color:var(--cyan);}
 
-/* SIDEBAR */
+/* wooden frame around the whole board */
+.app{
+  display:grid;grid-template-columns:216px 1fr;min-height:100vh;
+  position:relative;
+  box-shadow:inset 0 0 0 3px rgba(244,241,230,.07), inset 0 0 110px rgba(0,0,0,.55);
+  border:12px solid var(--wood);
+  border-image:linear-gradient(150deg,#8f6238,#654021 35%,#7a5230 60%,#4b2e17) 1;
+}
+/* chalk dust film */
+.app::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.26;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  mix-blend-mode:overlay;
+}
+[data-theme="light"] .app::before{opacity:.12;}
+.app > *{position:relative;z-index:2;}
+
+/* ── SIDEBAR ── */
 .sidebar{
-  background:var(--navy2);
+  background:rgba(0,0,0,.35);
   border-right:1px solid var(--line);
-  padding:20px 14px;
-  position:sticky;top:0;height:100vh;
-  display:flex;flex-direction:column;gap:4px;
+  padding:18px 12px;position:sticky;top:0;height:100vh;
+  display:flex;flex-direction:column;gap:2px;
 }
+[data-theme="light"] .sidebar{background:rgba(0,0,0,.03);}
 .brand{
-  font-family:'JetBrains Mono',monospace;
-  font-size:13px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--cyan);margin-bottom:18px;padding:0 8px;
+  font-family:var(--font-display);font-weight:700;font-size:30px;line-height:1;
+  color:var(--chalk);margin:0 0 6px;padding:0 8px;
 }
-.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.08em;margin-top:2px;}
+.brand small{display:block;font-family:var(--font-body);color:var(--muted);font-size:12px;margin-top:4px;line-height:1.3;}
+#nav{margin-top:8px;}
 .nav-item{
-  display:flex;align-items:center;gap:10px;
-  padding:9px 10px;border-radius:var(--radius);cursor:pointer;
-  font-size:13.5px;color:var(--ink-soft);border-left:2px solid transparent;
+  display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);
+  cursor:pointer;font-size:16px;color:var(--chalk-dim);border-left:2px solid transparent;
 }
-.nav-item:hover{background:rgba(95,212,214,.08);}
-.nav-item.active{background:rgba(95,212,214,.12);border-left:2px solid var(--cyan);color:var(--cyan);}
-.nav-num{font-size:15px;width:20px;text-align:center;}
-.sidebar-foot{margin-top:auto;padding:10px 8px;font-size:10.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;border-top:1px solid var(--line);}
+.nav-item:hover{color:var(--chalk);background:rgba(244,241,230,.06);}
+.nav-item.active{color:var(--chalk);background:rgba(244,241,230,.10);border-left-color:var(--amber);}
+.nav-item.active::after{
+  content:'';position:absolute;left:34px;right:10px;bottom:5px;height:2px;
+  background:var(--amber);opacity:.55;border-radius:2px;
+}
+.nav-item{position:relative;}
+.nav-badge{
+  background:var(--danger);color:var(--board-dark);font-family:var(--font-data);font-weight:700;
+  font-size:10px;border-radius:999px;padding:1px 7px;margin-left:auto;text-shadow:none;
+}
 
-/* MAIN */
-.main{padding:26px 34px 60px;max-width:1080px;}
-.topbar{display:flex;align-items:center;gap:14px;margin-bottom:24px;}
+/* signature: the chalk tray */
+.sidebar-foot{
+  margin-top:auto;display:flex;flex-wrap:wrap;gap:7px;align-items:center;
+  padding:12px 10px 10px;margin-left:-12px;margin-right:-12px;margin-bottom:-18px;
+  background:linear-gradient(180deg,#8a5a32,#6b4324 40%,#4e3018);
+  border-top:2px solid rgba(0,0,0,.35);
+  box-shadow:inset 0 3px 8px rgba(0,0,0,.4);
+}
+[data-theme="light"] .sidebar-foot{background:linear-gradient(180deg,#c3c7cb,#a4a9ae);}
+.mini-btn{
+  font-family:var(--font-body);font-size:13px;padding:5px 12px;cursor:pointer;
+  border:none;border-radius:2px 2px 3px 3px;
+  background:linear-gradient(180deg,#fbf8ee,#ddd8c8);color:#2b2b28;
+  box-shadow:0 2px 0 rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.8);
+  text-shadow:none;
+}
+.mini-btn:hover{transform:translateY(-1px);box-shadow:0 3px 0 rgba(0,0,0,.30);}
+.mini-btn:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(0,0,0,.30);}
+.mini-btn.warn{background:linear-gradient(180deg,#ffcfc6,#e8a99e);}
+.syncpill{
+  width:100%;font-family:var(--font-data);font-size:10px;
+  color:#e8dcc8;padding:4px 2px 0;line-height:1.4;text-shadow:none;opacity:.85;
+}
+.syncpill b{color:#fff2cd;font-weight:700;}
+.syncpill.bad b{color:#ffb0a0;}
+[data-theme="light"] .syncpill{color:#3c4247;}
+[data-theme="light"] .syncpill b{color:#1a1e21;}
+
+/* ── MAIN ── */
+.main{padding:24px 30px 70px;max-width:1080px;}
+.topbar{display:flex;align-items:center;gap:11px;margin-bottom:20px;}
 .search{
-  flex:1;display:flex;align-items:center;gap:8px;
-  background:var(--navy2);border:1px solid var(--line);border-radius:var(--radius);
-  padding:9px 12px;
+  flex:1;display:flex;align-items:center;gap:9px;
+  background:rgba(244,241,230,.045);border:1px solid var(--line);border-radius:var(--radius);padding:8px 13px;
 }
-.search input{background:none;border:none;outline:none;color:var(--ink-soft);font-family:'Inter';font-size:13px;width:100%;}
+[data-theme="light"] .search{background:rgba(0,0,0,.03);}
+.search input{background:none;border:none;outline:none;color:var(--ink);font-family:var(--font-body);font-size:16px;width:100%;padding:0;text-shadow:var(--glow);}
+.search input::placeholder{color:var(--muted);opacity:.75;}
 .icon-btn{
-  background:var(--navy2);border:1px solid var(--line);border-radius:999px;
-  padding:9px 14px;cursor:pointer;color:var(--ink-soft);font-size:13px;font-family:'Inter';
+  background:none;border:1px solid var(--line);border-radius:var(--radius);
+  padding:8px 14px;cursor:pointer;color:var(--ink);font-size:15px;font-family:var(--font-body);
+  white-space:nowrap;text-shadow:var(--glow);
 }
-.icon-btn:hover{border-color:var(--coral);color:var(--coral);}
-
+.icon-btn:hover{border-color:var(--amber);color:var(--amber);}
 .hamburger{display:none;}
 .sidebar-backdrop{display:none;}
-@media(max-width:820px){
-  .app{grid-template-columns:1fr;}
-  .sidebar{
-    position:fixed;top:0;left:-250px;width:220px;height:100vh;z-index:60;
-    transition:left .25s ease;box-shadow:4px 0 24px rgba(0,0,0,.35);
-  }
+@media(max-width:860px){
+  .app{grid-template-columns:1fr;border-width:7px;}
+  .sidebar{position:fixed;top:0;left:-250px;width:216px;z-index:60;transition:left .22s ease;background:var(--board-dark);box-shadow:6px 0 30px rgba(0,0,0,.55);}
   .sidebar.open{left:0;}
-  .sidebar-backdrop{
-    display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:55;
-  }
+  .sidebar-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:55;}
   .sidebar-backdrop.show{display:block;}
   .hamburger{
-    display:flex;align-items:center;justify-content:center;
-    width:38px;height:38px;background:var(--navy2);border:1px solid var(--line);
-    border-radius:999px;cursor:pointer;font-size:16px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;width:40px;height:40px;
+    background:none;border:1px solid var(--line);border-radius:var(--radius);
+    cursor:pointer;font-size:17px;flex-shrink:0;color:var(--ink);
   }
-  .main{padding:16px 16px 70px;}
-  .topbar{flex-wrap:wrap;gap:10px;}
-  .search{order:3;flex-basis:100%;}
-  h1.page-title{font-size:19px;}
+  .main{padding:16px 13px 80px;}
+  h1.page-title{font-size:30px;}
 }
 
-.memory-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;}
-.memory-card{background:var(--navy);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;position:relative;}
-.memory-card img{width:100%;height:140px;object-fit:cover;display:block;}
-.memory-card .cap{padding:8px 10px;font-size:12px;color:var(--ink-soft);}
-.memory-card .cap .muted{font-size:10.5px;}
-.memory-card .x-btn{position:absolute;top:6px;right:6px;background:rgba(20,20,20,.55);border-radius:50%;width:24px;height:24px;color:#fff;}
-.upload-drop{border:2px dashed var(--line);border-radius:var(--radius);padding:26px;text-align:center;color:var(--muted);font-size:13px;cursor:pointer;}
-.upload-drop:hover{border-color:var(--coral);color:var(--coral);}
-.save-toast{position:fixed;bottom:18px;right:18px;background:var(--cyan);color:#0d1a1a;padding:8px 16px;border-radius:999px;font-size:12px;font-weight:600;opacity:0;transition:opacity .25s;pointer-events:none;z-index:99;}
-.save-toast.show{opacity:1;}
-
-.nav-group-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:14px 10px 4px;}
-.nav-item{position:relative;}
-.nav-badge{background:var(--danger);color:#2a1210;font-size:10px;font-weight:700;border-radius:999px;padding:1px 7px;margin-left:auto;}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,138,128,.55);}70%{box-shadow:0 0 0 7px rgba(255,138,128,0);}100%{box-shadow:0 0 0 0 rgba(255,138,128,0);}}
-.pulse-dot{width:8px;height:8px;border-radius:50%;background:var(--danger);display:inline-block;flex-shrink:0;animation:pulse 1.5s infinite;}
-.list-item{transition:transform .12s,box-shadow .12s;border-left:3px solid transparent;}
-.list-item:hover{transform:translateX(2px);}
-.list-item.urgent-overdue{border-left-color:var(--danger);background:linear-gradient(90deg, rgba(255,138,128,.09), transparent 60%);}
-.list-item.urgent-soon{border-left-color:var(--amber);background:linear-gradient(90deg, rgba(240,184,96,.09), transparent 60%);}
-.panel, .memory-card, .note-card{animation:fadeIn .25s ease;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
-.stat .num{transition:color .2s;}
-.stat.warn .num{color:var(--danger);}
-
+/* ── TYPE ── */
 h1.page-title{
-  font-family:'JetBrains Mono',monospace;font-weight:700;font-size:22px;
-  color:var(--ink-soft);margin:0 0 4px;letter-spacing:-.01em;
+  font-family:var(--font-display);font-weight:700;font-size:38px;line-height:1.05;
+  margin:0 0 2px;color:var(--chalk);letter-spacing:.5px;
 }
-.page-sub{color:var(--muted);font-size:13px;margin:0 0 26px;}
+.page-sub{color:var(--muted);font-size:15px;margin:0 0 22px;}
 
+/* ── PANELS: boxes drawn on the board ── */
 .panel{
-  background:var(--navy2);border:1px solid var(--line);border-radius:var(--radius);
-  padding:22px;margin-bottom:18px;
-  box-shadow:0 4px 18px rgba(0,0,0,.14);
+  background:rgba(244,241,230,.030);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:18px 20px;margin-bottom:15px;
+  box-shadow:inset 0 0 0 1px rgba(244,241,230,.035);
+  animation:fadeIn .22s ease;
 }
-.panel-title{font-family:'JetBrains Mono';font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);margin:0 0 14px;display:flex;justify-content:space-between;align-items:center;}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
-.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
-@media(max-width:800px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+[data-theme="light"] .panel{background:rgba(255,255,255,.7);box-shadow:0 1px 2px rgba(0,0,0,.06);}
+@keyframes fadeIn{from{opacity:0;transform:translateY(3px);}to{opacity:1;transform:none;}}
+.panel-title{
+  font-family:var(--font-display);font-weight:700;font-size:23px;line-height:1.1;
+  color:var(--amber);margin:0 0 13px;padding-bottom:5px;
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  border-bottom:1px solid rgba(255,223,148,.26);
+}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:15px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;}
+@media(max-width:860px){.grid-2,.grid-3{grid-template-columns:1fr;}}
 
-.stat{display:flex;flex-direction:column;gap:2px;}
-.stat .num{font-family:'JetBrains Mono';font-size:26px;color:var(--cyan);}
-.stat .lbl{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
-
+/* ── FORM: writing on the board ── */
 input,textarea,select{
-  background:var(--navy);border:1px solid var(--line);border-radius:var(--radius);
-  color:var(--ink-soft);font-family:'Inter';font-size:13px;padding:8px 10px;width:100%;
+  background:rgba(244,241,230,.045);border:none;border-bottom:1.5px solid var(--line);
+  border-radius:2px 2px 0 0;color:var(--ink);font-family:var(--font-body);font-size:16px;
+  padding:8px 10px;width:100%;text-shadow:var(--glow);
 }
-textarea{resize:vertical;font-family:'JetBrains Mono';}
-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;}
-.field{margin-bottom:12px;}
+[data-theme="light"] input,[data-theme="light"] textarea,[data-theme="light"] select{background:rgba(0,0,0,.035);}
+input:focus,textarea:focus,select:focus{outline:none;border-bottom-color:var(--amber);background:rgba(244,241,230,.075);}
+[data-theme="light"] input:focus,[data-theme="light"] textarea:focus,[data-theme="light"] select:focus{background:rgba(0,0,0,.06);}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:.7;}
+textarea{resize:vertical;font-family:var(--font-data);font-size:14px;line-height:1.65;}
+select option{background:var(--slate);color:var(--chalk);}
+label{
+  font-family:var(--font-body);font-size:13px;color:var(--muted);
+  letter-spacing:.02em;display:block;margin-bottom:4px;text-transform:none;
+}
+.field{margin-bottom:11px;}
+input[type=checkbox]{
+  width:19px;height:19px;accent-color:var(--amber);cursor:pointer;
+  background:none;border:none;padding:0;flex-shrink:0;
+}
+input[type=date]{color-scheme:dark;}
+[data-theme="light"] input[type=date]{color-scheme:light;}
+
 .btn{
-  background:var(--coral);color:#241512;border:none;border-radius:999px;
-  padding:9px 18px;font-family:'Inter';font-size:12.5px;font-weight:600;cursor:pointer;
-  letter-spacing:.01em;transition:transform .12s,filter .12s;
+  background:none;color:var(--amber);border:1.5px solid var(--amber);
+  border-radius:var(--radius);padding:8px 18px;
+  font-family:var(--font-body);font-size:16px;cursor:pointer;
+  white-space:nowrap;text-shadow:var(--glow);
 }
-.btn:hover{filter:brightness(1.08);transform:translateY(-1px);}
-.btn.secondary{background:none;border:1px solid var(--line);color:var(--ink-soft);}
-.btn.danger{background:var(--danger);color:#2a1210;}
-.row{display:flex;gap:10px;flex-wrap:wrap;}
-
-.list-item{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius);margin-bottom:8px;
-  background:var(--navy);
-}
-.tag{font-family:'JetBrains Mono';font-size:10px;padding:2px 7px;border:1px solid var(--line);border-radius:12px;color:var(--muted);}
-.tag.cyan{color:var(--cyan);border-color:var(--cyan);}
-.tag.amber{color:var(--amber);border-color:var(--amber);}
-.tag.danger{color:var(--danger);border-color:var(--danger);}
-.muted{color:var(--muted);font-size:12px;}
-.x-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;}
+.btn:hover{background:rgba(255,223,148,.13);}
+.btn.secondary{color:var(--chalk-dim);border-color:var(--line);}
+.btn.secondary:hover{color:var(--chalk);border-color:var(--chalk-dim);background:rgba(244,241,230,.08);}
+.btn.danger{color:var(--danger);border-color:var(--danger);}
+.btn.danger:hover{background:rgba(255,144,128,.13);}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+.x-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:2px 6px;line-height:1;}
 .x-btn:hover{color:var(--danger);}
-
-.note-card{background:var(--navy);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:10px;cursor:pointer;}
-.note-card:hover{border-color:var(--cyan);}
-.note-card h4{margin:0 0 6px;font-size:14px;font-family:'JetBrains Mono';}
-.note-card p{margin:0;font-size:12px;color:var(--muted);white-space:pre-wrap;max-height:60px;overflow:hidden;}
-
-.md-preview h1,.md-preview h2,.md-preview h3{color:var(--cyan);font-family:'JetBrains Mono';}
-.md-preview code{background:var(--navy);padding:1px 5px;border-radius:2px;font-family:'JetBrains Mono';}
-.md-preview{font-size:13.5px;line-height:1.6;}
-
+.muted{color:var(--muted);font-size:14px;}
+.tag{
+  font-family:var(--font-data);font-size:11px;padding:2px 8px;
+  border:1px solid var(--line);border-radius:999px;color:var(--muted);
+  white-space:nowrap;text-shadow:none;
+}
+.tag.cyan{color:var(--cyan);border-color:rgba(159,220,207,.45);}
 .hidden{display:none !important;}
-.calc-result{font-family:'JetBrains Mono';font-size:20px;color:var(--cyan);margin-top:10px;}
-::-webkit-scrollbar{width:8px;}
-::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+
+/* ── STATS: numbers written big ── */
+.stat{display:flex;flex-direction:column;gap:1px;}
+.stat .num{font-family:var(--font-display);font-weight:700;font-size:44px;line-height:1;color:var(--cyan);}
+.stat.warn .num{color:var(--danger);}
+.stat .lbl{font-size:14px;color:var(--muted);letter-spacing:.02em;text-transform:none;}
+
+/* ── LIST ROWS ── */
+.list-item{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:9px 12px;border:1px solid transparent;border-bottom:1px dashed var(--line);
+  border-radius:0;margin-bottom:2px;background:none;border-left:3px solid transparent;
+}
+.list-item:last-child{border-bottom:none;}
+.list-item:hover{background:rgba(244,241,230,.055);}
+.list-item.overdue{border-left-color:var(--danger);background:rgba(255,144,128,.10);}
+.list-item.soon{border-left-color:var(--amber);background:rgba(255,223,148,.09);}
+.list-item.now{border-left-color:var(--cyan);background:rgba(159,220,207,.12);}
+.list-item.done{opacity:.45;}
+.list-item.done .ttl{text-decoration:line-through;}
+.ttl{font-size:16px;line-height:1.3;}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;opacity:.9;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(159,220,207,.6);}70%{box-shadow:0 0 0 9px rgba(159,220,207,0);}100%{box-shadow:0 0 0 0 rgba(159,220,207,0);}}
+.dot.live{animation:pulse 1.7s infinite;}
+
+/* ── SCHEDULE: the timetable chalked on the board ── */
+.sched{display:grid;grid-template-columns:56px repeat(5,1fr);gap:5px;}
+.sched .hd{
+  font-family:var(--font-display);font-weight:700;font-size:21px;color:var(--chalk-dim);
+  text-align:center;padding-bottom:5px;text-transform:none;letter-spacing:0;
+}
+.sched .hd.today{color:var(--amber);}
+.col{
+  position:relative;background:rgba(244,241,230,.028);
+  border:1px solid var(--line);border-radius:var(--radius);
+}
+[data-theme="light"] .col{background:rgba(0,0,0,.025);}
+.gutter{position:relative;}
+.gutter span{
+  position:absolute;right:6px;font-family:var(--font-data);font-size:10px;
+  color:var(--muted);transform:translateY(-6px);text-shadow:none;
+}
+.blk{
+  position:absolute;left:3px;right:3px;border-radius:3px;padding:5px 7px;
+  overflow:hidden;font-size:13px;line-height:1.25;border-left:3px solid;
+}
+.blk b{display:block;font-family:var(--font-body);font-size:14px;font-weight:400;}
+.blk small{color:var(--muted);font-size:11px;display:block;font-family:var(--font-data);text-shadow:none;}
+.nowline{position:absolute;left:0;right:0;height:2px;background:var(--danger);z-index:5;pointer-events:none;opacity:.85;}
+.nowline::before{content:'';position:absolute;left:-3px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--danger);}
+.sched-mobile{display:none;}
+@media(max-width:860px){.sched{display:none;}.sched-mobile{display:block;}}
+
+/* ── NOTES ── */
+.md-preview{font-size:16px;line-height:1.65;}
+.md-preview h1,.md-preview h2,.md-preview h3{font-family:var(--font-display);color:var(--amber);margin:.5em 0 .3em;}
+.md-preview h1{font-size:30px;}
+.md-preview h2{font-size:25px;}
+.md-preview h3{font-size:21px;}
+.md-preview code{background:rgba(244,241,230,.075);padding:1px 6px;border-radius:2px;font-family:var(--font-data);font-size:13px;text-shadow:none;}
+[data-theme="light"] .md-preview code{background:rgba(0,0,0,.06);}
+.md-preview ul{margin:6px 0;padding-left:22px;}
+.md-preview li{margin-bottom:3px;}
+.note-card{
+  background:rgba(244,241,230,.030);border:1px solid var(--line);border-radius:var(--radius);
+  padding:13px 15px;margin-bottom:9px;cursor:pointer;
+}
+[data-theme="light"] .note-card{background:rgba(255,255,255,.7);}
+.note-card:hover{border-color:var(--amber);background:rgba(244,241,230,.07);}
+.note-card h4{margin:0 0 5px;font-size:20px;font-family:var(--font-display);font-weight:700;}
+.note-card p{margin:0;font-size:14px;color:var(--muted);white-space:pre-wrap;max-height:52px;overflow:hidden;}
+.calc-result{font-family:var(--font-data);font-size:17px;color:var(--cyan);margin-top:9px;text-shadow:none;}
+
+/* ── TOAST: a sticky note on the frame ── */
+.toast{
+  position:fixed;bottom:20px;right:20px;z-index:99;pointer-events:none;
+  background:#fdf6d8;color:#3a3222;padding:9px 17px;border-radius:2px;
+  font-family:var(--font-body);font-size:15px;text-shadow:none;
+  box-shadow:0 5px 16px rgba(0,0,0,.4);transform:rotate(-1.5deg);
+  opacity:0;transition:opacity .25s;
+}
+.toast.show{opacity:1;}
+
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
+::-webkit-scrollbar{width:9px;height:9px;}
+::-webkit-scrollbar-track{background:rgba(0,0,0,.35);}
+::-webkit-scrollbar-thumb{background:rgba(244,241,230,.20);border-radius:5px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(244,241,230,.32);}
+@media(prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;}}
 </style>
 </head>
 <body data-theme="dark">
 <div class="app">
-  <div class="sidebar" id="sidebar">
-    <div class="brand">Workshop<small>your study corner</small></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">Workshop<small>BSCE1-A2 · your study corner</small></div>
     <div id="nav"></div>
-    <div class="sidebar-foot">JetBrains / Inter<br>synced to this browser</div>
-  </div>
-  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
-  <div class="main">
+    <div class="sidebar-foot">
+      <button class="mini-btn" onclick="exportData()">backup</button>
+      <button class="mini-btn" onclick="document.getElementById('importFile').click()">restore</button>
+      <button class="mini-btn warn" onclick="wipeData()">wipe</button>
+      <input type="file" id="importFile" accept="application/json" class="hidden" onchange="importData(event)">
+      <div class="syncpill" id="syncPill"></div>
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" id="backdrop" onclick="closeSidebar()"></div>
+  <main class="main">
     <div class="topbar">
       <button class="hamburger" id="hamburgerBtn">&#9776;</button>
-      <div class="search"><span>&#128269;</span><input id="globalSearch" placeholder="Search subjects, notes, formulas, bookmarks..."></div>
-      <button class="icon-btn" id="themeToggle">&#9789; theme</button>
+      <div class="search"><span>&#128269;</span><input id="globalSearch" placeholder="Search subjects, tasks, notes, formulas..."></div>
+      <button class="icon-btn" id="themeToggle" title="Chalkboard / whiteboard">board</button>
     </div>
     <div id="view"></div>
-  </div>
+  </main>
 </div>
-<div class="save-toast" id="saveToast">Saved ✓</div>
+<div class="toast" id="toast">Saved</div>
 
 <script>
-// ---------- IN-MEMORY STATE ----------
-let state = {
-  page: 'dashboard',
-  subjects: [
-    {id:1,name:'Statics & Mechanics',color:'#5fd4d6',credits:3},
-    {id:2,name:'Calculus II',color:'#e8a23d',credits:4},
-    {id:3,name:'Materials Science',color:'#e0665a',credits:3},
-  ],
-  notes: [
-    {id:1,subjectId:1,title:'Shear & Moment Diagrams',body:'# Shear & Moment\n\nDraw **V** and **M** diagrams from load cases.\n\n- Point loads shift V by the load\n- Distributed loads slope V linearly\n\n`M = ∫V dx`',updated:'2026-07-14'},
-    {id:2,subjectId:2,title:'Series Convergence',body:'# Convergence Tests\n\n1. Ratio test\n2. Root test\n3. Comparison test\n\nUse ratio test first for factorials.',updated:'2026-07-16'},
-  ],
-  pdfs: [
-    {id:1,name:'Statics_Chapter4.pdf',subjectId:1,size:'2.1 MB'},
-    {id:2,name:'Calc2_SeriesNotes.pdf',subjectId:2,size:'860 KB'},
-  ],
-  assignments: [
-    {id:1,title:'Beam Loading Problem Set',subjectId:1,due:'2026-07-24',type:'Assignment',done:false},
-    {id:2,title:'Midterm Exam',subjectId:2,due:'2026-08-02',type:'Exam',done:false},
-    {id:3,title:'Lab Report — Tensile Test',subjectId:3,due:'2026-07-21',type:'Assignment',done:true},
-  ],
-  grades: [
-    {id:1,subjectId:1,name:'Statics & Mechanics',credits:3,grade:1.50},
-    {id:2,subjectId:2,name:'Calculus II',credits:4,grade:1.75},
-    {id:3,subjectId:3,name:'Materials Science',credits:3,grade:1.25},
-  ],
-  formulas: [
-    {id:1,category:'Mechanics',name:'Bending Stress',formula:'σ = M·c / I',examples:[
-      'M=1000 N·m, c=0.1 m, I=0.002 m⁴ → σ = 50,000 Pa (50 kPa)',
-      'M=2000 N·m, c=0.2 m, I=0.004 m⁴ → σ = 100,000 Pa (100 kPa)',
-      'M=1500 N·m, c=0.15 m, I=0.003 m⁴ → σ = 75,000 Pa (75 kPa)',
-    ]},
-    {id:2,category:'Mechanics',name:'Shear Stress (beam)',formula:'τ = V·Q / (I·b)',examples:[
-      'V=1000 N, Q=0.001 m³, I=0.002 m⁴, b=0.05 m → τ = 10,000 Pa',
-      'V=2000 N, Q=0.0015 m³, I=0.003 m⁴, b=0.04 m → τ = 25,000 Pa',
-      'V=1500 N, Q=0.002 m³, I=0.004 m⁴, b=0.06 m → τ = 12,500 Pa',
-    ]},
-    {id:3,category:'Mechanics',name:'Deflection (cantilever, point load)',formula:'δ = P·L³ / (3EI)',examples:[
-      'P=1000 N, L=2 m, EI=100,000 N·m² → δ = 0.0267 m',
-      'P=500 N, L=3 m, EI=150,000 N·m² → δ = 0.03 m',
-      'P=2000 N, L=1 m, EI=80,000 N·m² → δ = 0.0083 m',
-    ]},
-    {id:4,category:'Mechanics',name:'Deflection (simply supported, midspan load)',formula:'δ = P·L³ / (48EI)',examples:[
-      'P=1000 N, L=4 m, EI=100,000 N·m² → δ = 0.0133 m',
-      'P=2000 N, L=2 m, EI=80,000 N·m² → δ = 0.0042 m',
-      'P=1500 N, L=3 m, EI=90,000 N·m² → δ = 0.0094 m',
-    ]},
-    {id:5,category:'Mechanics',name:'Torsion (shear stress)',formula:'τ = T·r / J',examples:[
-      'T=500 N·m, r=0.05 m, J=0.0002 m⁴ → τ = 125,000 Pa',
-      'T=800 N·m, r=0.04 m, J=0.00025 m⁴ → τ = 128,000 Pa',
-      'T=1000 N·m, r=0.03 m, J=0.0003 m⁴ → τ = 100,000 Pa',
-    ]},
-    {id:6,category:'Mechanics',name:'Angle of Twist',formula:'θ = T·L / (G·J)',examples:[
-      'T=500 N·m, L=2 m, G=80 GPa, J=0.0002 m⁴ → θ ≈ 6.25×10⁻⁸ rad',
-      'T=800 N·m, L=1 m, G=79 GPa, J=0.00025 m⁴ → θ ≈ 4.05×10⁻⁸ rad',
-      'T=300 N·m, L=1.5 m, G=77 GPa, J=0.0001 m⁴ → θ ≈ 5.84×10⁻⁸ rad',
-    ]},
-    {id:7,category:'Mechanics',name:'Euler Buckling Load',formula:'P_cr = π²EI / (KL)²',examples:[
-      'E=200 GPa, I=0.0001 m⁴, K=1, L=3 m → P_cr ≈ 2.19×10⁷ N',
-      'E=70 GPa, I=0.00005 m⁴, K=1, L=2 m → P_cr ≈ 8.64×10⁶ N',
-      'E=200 GPa, I=0.00002 m⁴, K=2, L=4 m → P_cr ≈ 6.17×10⁵ N',
-    ]},
-    {id:8,category:'Mechanics',name:'Moment of Inertia (rectangle)',formula:'I = b·h³ / 12',examples:[
-      'b=0.2 m, h=0.3 m → I = 0.00045 m⁴',
-      'b=0.15 m, h=0.25 m → I ≈ 0.000195 m⁴',
-      'b=0.3 m, h=0.4 m → I = 0.0016 m⁴',
-    ]},
-    {id:9,category:'Calculus',name:'Taylor Series',formula:'f(x) = Σ fⁿ(a)/n! · (x−a)ⁿ',examples:[
-      'eˣ ≈ 1 + x + x²/2! + x³/3! + ...',
-      'sin x ≈ x − x³/3! + x⁵/5! − ...',
-      'cos x ≈ 1 − x²/2! + x⁴/4! − ...',
-    ]},
-    {id:10,category:'Calculus',name:'Derivative of Product',formula:"(fg)' = f'g + fg'",examples:[
-      'f=x², g=sin x → (x²sin x)′ = 2x sin x + x² cos x',
-      'f=eˣ, g=x³ → (x³eˣ)′ = 3x²eˣ + x³eˣ',
-      'f=ln x, g=x² → (x²ln x)′ = 2x ln x + x',
-    ]},
-    {id:11,category:'Calculus',name:'Fundamental Theorem',formula:'∫ₐᵇ f\'(x) dx = f(b) − f(a)',examples:[
-      'f(x)=x² → ∫₀³ 2x dx = 9 − 0 = 9',
-      'f(x)=sin x → ∫₀^(π/2) cos x dx = 1 − 0 = 1',
-      'f(x)=x³ → ∫₁² 3x² dx = 8 − 1 = 7',
-    ]},
-    {id:12,category:'Calculus',name:'Chain Rule',formula:"(f∘g)'(x) = f'(g(x))·g'(x)",examples:[
-      'sin(x²) → derivative = cos(x²)·2x',
-      '(3x+1)⁵ → derivative = 15(3x+1)⁴',
-      'e^(2x) → derivative = 2e^(2x)',
-    ]},
-    {id:13,category:'Thermo',name:'Ideal Gas Law',formula:'PV = nRT',examples:[
-      'n=1 mol, T=298 K, V=0.0224 m³ → P ≈ 110,610 Pa',
-      'n=2 mol, T=350 K, V=0.05 m³ → P ≈ 116,396 Pa',
-      'P=101,325 Pa, V=0.001 m³, T=300 K → n ≈ 0.0406 mol',
-    ]},
-    {id:14,category:'Thermo',name:'First Law of Thermodynamics',formula:'ΔU = Q − W',examples:[
-      'Q=500 J, W=200 J → ΔU = 300 J',
-      'Q=−300 J, W=−100 J → ΔU = −200 J',
-      'Q=1000 J, W=1000 J → ΔU = 0 J (isothermal cycle)',
-    ]},
-    {id:15,category:'Thermo',name:'Efficiency (Carnot)',formula:'η = 1 − T_c/T_h',examples:[
-      'T_c=300 K, T_h=600 K → η = 0.5 (50%)',
-      'T_c=280 K, T_h=400 K → η = 0.3 (30%)',
-      'T_c=250 K, T_h=500 K → η = 0.5 (50%)',
-    ]},
-    {id:16,category:'Materials',name:"Hooke's Law",formula:'σ = E·ε',examples:[
-      'E=200 GPa, ε=0.001 → σ = 200 MPa',
-      'E=70 GPa, ε=0.0005 → σ = 35 MPa',
-      'E=110 GPa, ε=0.0008 → σ = 88 MPa',
-    ]},
-    {id:17,category:'Materials',name:'Poisson\'s Ratio',formula:'ν = −ε_lateral / ε_axial',examples:[
-      'ε_axial=0.002, ε_lateral=−0.0006 → ν = 0.3',
-      'ε_axial=0.001, ε_lateral=−0.00033 → ν ≈ 0.33',
-      'ε_axial=0.0015, ε_lateral=−0.00045 → ν = 0.3',
-    ]},
-    {id:18,category:'Materials',name:'Factor of Safety',formula:'FS = σ_yield / σ_allow',examples:[
-      'σ_yield=250 MPa, σ_allow=100 MPa → FS = 2.5',
-      'σ_yield=400 MPa, σ_allow=160 MPa → FS = 2.5',
-      'σ_yield=350 MPa, σ_allow=175 MPa → FS = 2.0',
-    ]},
-    {id:19,category:'Electrical',name:"Ohm's Law",formula:'V = I·R',examples:[
-      'I=2 A, R=10 Ω → V = 20 V',
-      'I=0.5 A, R=100 Ω → V = 50 V',
-      'V=12 V, R=4 Ω → I = 3 A',
-    ]},
-    {id:20,category:'Electrical',name:'Electric Power',formula:'P = V·I = I²R',examples:[
-      'V=12 V, I=2 A → P = 24 W',
-      'I=3 A, R=5 Ω → P = 45 W',
-      'V=120 V, I=0.5 A → P = 60 W',
-    ]},
-    {id:21,category:'Fluids',name:'Continuity Equation',formula:'A₁v₁ = A₂v₂',examples:[
-      'A₁=0.02 m², v₁=3 m/s, A₂=0.01 m² → v₂ = 6 m/s',
-      'A₁=0.05 m², v₁=2 m/s, A₂=0.025 m² → v₂ = 4 m/s',
-      'A₁=0.1 m², v₁=1 m/s, A₂=0.04 m² → v₂ = 2.5 m/s',
-    ]},
-    {id:22,category:'Fluids',name:"Bernoulli's Equation",formula:'P + ½ρv² + ρgh = const',examples:[
-      'ρ=1000, v₁=2, v₂=4 m/s, same height → P₂ = P₁ − 6,000 Pa',
-      'Tank draining from h=5 m → exit velocity v = √(2gh) ≈ 9.9 m/s',
-      'Pipe narrowing: v₁=1→v₂=3 m/s, ρ=1000 → P₂ = P₁ − 4,000 Pa',
-    ]},
-    {id:23,category:'Fluids',name:'Reynolds Number',formula:'Re = ρvD / μ',examples:[
-      'Water: ρ=1000, v=2 m/s, D=0.05 m, μ=0.001 → Re = 100,000 (turbulent)',
-      'Air: ρ=1.2, v=10 m/s, D=0.1 m, μ=1.8×10⁻⁵ → Re ≈ 66,700',
-      'Water: ρ=1000, v=0.5 m/s, D=0.02 m, μ=0.001 → Re = 10,000',
-    ]},
-    {id:24,category:'Statics',name:'Equilibrium (2D)',formula:'ΣFx=0, ΣFy=0, ΣM=0',examples:[
-      'Symmetric beam, 10 kN load at midspan → each support reaction = 5 kN',
-      'Three-force member at 0°, 120°, 240°, equal magnitude → net force = 0',
-      'Cantilever with 200 N tip load → fixed-end moment = 200 × L (N·m)',
-    ]},
-    {id:25,category:'Statics',name:'Centroid (composite area)',formula:'x̄ = Σ(xᵢAᵢ) / ΣAᵢ',examples:[
-      'A₁=6 at x=1, A₂=4 at x=5 → x̄ = 2.6',
-      'A₁=10 at x=0, A₂=10 at x=4 → x̄ = 2',
-      'A₁=8 at x=2, A₂=2 at x=10 → x̄ = 3.6',
-    ]},
-  ],
-  files: [
-    {id:1,name:'truss_analysis_v2.dwg',project:'Bridge Design Studio',date:'2026-07-10'},
-    {id:2,name:'final_report_draft.docx',project:'Materials Lab',date:'2026-07-15'},
-  ],
-  bookmarks: [
-    {id:1,title:'Engineering Toolbox',url:'https://www.engineeringtoolbox.com',tag:'reference'},
-    {id:2,title:'Paul\'s Online Math Notes',url:'https://tutorial.math.lamar.edu',tag:'calc'},
-    {id:3,title:'MIT OCW — Mechanics of Materials',url:'https://ocw.mit.edu',tag:'course'},
-  ],
-  memories: [],
-  activeNote: null,
-  activeFormula: null,
-  nextId: {subjects:4,notes:3,pdfs:3,assignments:4,grades:4,formulas:26,files:3,bookmarks:4,memories:1},
-};
-
-const gpaScale = [1.00,1.25,1.50,1.75,2.00,2.25,2.50,2.75,3.00,4.00,5.00];
-function gpaRemark(v){
-  if(v<=1.75) return 'Excellent';
-  if(v<=2.50) return 'Good';
-  if(v<=3.00) return 'Passing';
-  if(v===4.00) return 'Conditional';
-  return 'Failed';
-}
-
-const nav = [
-  {group:'Overview', items:[
-    {id:'dashboard',label:'Dashboard',icon:'🏠'},
-  ]},
-  {group:'Academics', items:[
-    {id:'subjects',label:'Subjects',icon:'📚'},
-    {id:'notes',label:'Notes',icon:'📝'},
-    {id:'pdfs',label:'PDF Library',icon:'📄'},
-    {id:'tracker',label:'Assignments & Exams',icon:'📅'},
-    {id:'gpa',label:'GPA Calculator',icon:'🧮'},
-  ]},
-  {group:'Tools', items:[
-    {id:'calc',label:'Eng. Calculators',icon:'📐'},
-    {id:'formulas',label:'Formula Library',icon:'📖'},
-  ]},
-  {group:'Extras', items:[
-    {id:'files',label:'Project Files',icon:'📂'},
-    {id:'bookmarks',label:'Bookmarks',icon:'🔖'},
-    {id:'memories',label:'Memories',icon:'🖼'},
-  ]},
+// ===== DEFAULT DATA: real BSCE1-A2 load =====
+const DAYS=['Mon','Tue','Wed','Thu','Fri'];
+const DEFAULT_SUBJECTS=[
+  {id:1, code:'GE PCOM',    name:'Purposive Communication',     units:3, color:'#9fdccf', meets:[{d:['Mon','Wed'],s:420,e:510,room:'204-T'}]},
+  {id:2, code:'MATH 111N',  name:'Mathematics 111N',            units:3, color:'#ffdf94', meets:[{d:['Tue','Thu'],s:420,e:510,room:'203-T'}]},
+  {id:3, code:'NSTP 111',   name:'NSTP 111',                    units:3, color:'#b8c0f2', meets:[{d:['Fri'],s:420,e:600,room:'204-T'}]},
+  {id:4, code:'GE STS',     name:'Science, Technology & Society',units:3, color:'#ffb09c', meets:[{d:['Mon','Wed'],s:510,e:600,room:'204-T'}]},
+  {id:5, code:'MATH 100',   name:'Mathematics 100',             units:3, color:'#b2dfa2', meets:[{d:['Tue','Thu'],s:510,e:600,room:'204-T'}]},
+  {id:6, code:'GE SELF',    name:'Understanding the Self',      units:3, color:'#e3b4e6', meets:[{d:['Mon','Wed'],s:600,e:690,room:'204-T'}]},
+  {id:7, code:'CHEM 111RN', name:'Chemistry (Lecture)',         units:3, color:'#a3d4f0', meets:[{d:['Tue','Thu'],s:600,e:690,room:'204-T'}]},
+  {id:8, code:'CE 111',     name:'Civil Engineering 111',       units:2, color:'#f2c3aa', meets:[{d:['Mon','Wed'],s:780,e:840,room:'204-T'}]},
+  {id:9, code:'GE MATH',    name:'Mathematics in Modern World', units:3, color:'#d9de98', meets:[{d:['Tue','Thu'],s:780,e:870,room:'204-T'}]},
+  {id:10,code:'CHEM 111LN', name:'Chemistry (Laboratory)',      units:1, color:'#89c1e0', meets:[{d:['Fri'],s:780,e:960,room:'CHEM LAB'}]},
+  {id:11,code:'PATHFIT 1N', name:'PATHFit 1',                   units:2, color:'#ddc6a2', meets:[{d:['Mon','Wed'],s:840,e:900,room:'--'}]},
 ];
+const DEFAULT_FORMULAS=[
+  {id:1,cat:'Math',name:'Quadratic Formula',f:'x = (-b +/- sqrt(b^2-4ac)) / 2a'},
+  {id:2,cat:'Math',name:'Chain Rule',f:"(f o g)'(x) = f'(g(x)) * g'(x)"},
+  {id:3,cat:'Math',name:'Product Rule',f:"(fg)' = f'g + fg'"},
+  {id:4,cat:'Math',name:'Law of Cosines',f:'c^2 = a^2 + b^2 - 2ab cos C'},
+  {id:5,cat:'Math',name:'Law of Sines',f:'a/sin A = b/sin B = c/sin C'},
+  {id:6,cat:'Chem',name:'Ideal Gas Law',f:'PV = nRT'},
+  {id:7,cat:'Chem',name:'Molarity',f:'M = mol solute / L solution'},
+  {id:8,cat:'Chem',name:'Dilution',f:'M1 V1 = M2 V2'},
+  {id:9,cat:'Chem',name:'Percent Yield',f:'% = (actual / theoretical) x 100'},
+  {id:10,cat:'Chem',name:'Moles from Mass',f:'n = m / M'},
+  {id:11,cat:'Chem',name:'Density',f:'rho = m / V'},
+  {id:12,cat:'Physics / CE',name:'Equilibrium (2D)',f:'sum Fx = 0, sum Fy = 0, sum M = 0'},
+  {id:13,cat:'Physics / CE',name:'Moment of a Force',f:'M = F * d'},
+  {id:14,cat:'Physics / CE',name:'Centroid (composite)',f:'x-bar = sum(xi Ai) / sum(Ai)'},
+  {id:15,cat:'Physics / CE',name:'Moment of Inertia (rect)',f:'I = b h^3 / 12'},
+  {id:16,cat:'Physics / CE',name:'Kinematics',f:'v^2 = v0^2 + 2a dx'},
+  {id:17,cat:'Physics / CE',name:'Newton 2nd Law',f:'sum F = m a'},
+  {id:18,cat:'Physics / CE',name:"Hooke's Law",f:'sigma = E * epsilon'},
+];
+const PH_SCALE=[1.00,1.25,1.50,1.75,2.00,2.25,2.50,2.75,3.00,5.00];
 
-// ---------- URGENCY ----------
-function daysUntil(due){
-  const today=new Date(); today.setHours(0,0,0,0);
-  const d=new Date(due+'T00:00:00');
-  return Math.round((d-today)/86400000);
+function freshState(){
+  return {
+    page:'today',
+    subjects:JSON.parse(JSON.stringify(DEFAULT_SUBJECTS)),
+    todos:[], notes:[], grades:{},
+    formulas:JSON.parse(JSON.stringify(DEFAULT_FORMULAS)),
+    memories:[], activeNote:null,
+    nextId:{subjects:100, todos:1, notes:1, formulas:100},
+  };
 }
-function urgencyOf(a){
-  if(a.done) return 'done';
-  const diff=daysUntil(a.due);
-  if(diff<0) return 'overdue';
-  if(diff<=2) return 'soon';
-  return 'ok';
-}
-function urgentCount(){
-  return state.assignments.filter(a=>!a.done && ['overdue','soon'].includes(urgencyOf(a))).length;
-}
+let state=freshState();
 
-function subjName(id){ const s=state.subjects.find(s=>s.id===id); return s?s.name:'—'; }
-function subjColor(id){ const s=state.subjects.find(s=>s.id===id); return s?s.color:'#7a8a99'; }
-function uid(key){ return state.nextId[key]++; }
-function go(page){ state.page=page; render(); if(typeof closeSidebar==='function') closeSidebar(); }
-
-function renderNav(){
-  const badge = urgentCount();
-  document.getElementById('nav').innerHTML = nav.map(g=>`
-    <div class="nav-group-label">${g.group}</div>
-    ${g.items.map(n=>`
-      <div class="nav-item ${state.page===n.id?'active':''}" onclick="go('${n.id}')">
-        <span class="nav-num">${n.icon}</span>${n.label}
-        ${(n.id==='tracker' && badge>0) ? `<span class="nav-badge">${badge}</span>` : ''}
-      </div>`).join('')}
-  `).join('');
+// ===== HELPERS =====
+function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function uid(k){return state.nextId[k]++;}
+function subj(id){return state.subjects.find(s=>s.id===id);}
+function subjCode(id){const s=subj(id);return s?esc(s.code):'General';}
+function subjColor(id){const s=subj(id);return s?s.color:'#8b96ab';}
+function hhmm(m){const h=Math.floor(m/60),x=m%60,ap=h<12?'AM':'PM',h12=(h%12===0)?12:h%12;return h12+':'+String(x).padStart(2,'0')+' '+ap;}
+function todayName(){return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date().getDay()];}
+function nowMin(){const d=new Date();return d.getHours()*60+d.getMinutes();}
+function isoToday(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10);}
+function daysUntil(due){if(!due)return null;const t=new Date(isoToday()+'T00:00:00'),d=new Date(due+'T00:00:00');return Math.round((d-t)/86400000);}
+function urgency(t){if(t.done)return 'done';const n=daysUntil(t.due);if(n===null)return '';if(n<0)return 'overdue';if(n<=2)return 'soon';return '';}
+function dueLabel(t){const n=daysUntil(t.due);if(n===null)return 'no date';if(n<0)return 'overdue by '+(-n)+'d';if(n===0)return 'due today';if(n===1)return 'due tomorrow';return 'due in '+n+'d';}
+function openTodos(){return state.todos.filter(t=>!t.done);}
+function urgentCount(){return openTodos().filter(t=>['overdue','soon'].indexOf(urgency(t))>=0).length;}
+function classesOn(day){
+  const out=[];
+  state.subjects.forEach(s=>(s.meets||[]).forEach(m=>{if(m.d.indexOf(day)>=0)out.push({s:s,m:m});}));
+  return out.sort((a,b)=>a.m.s-b.m.s);
 }
-
-// ---------- simple markdown ----------
 function md(src){
-  return src
-    .replace(/^### (.*)$/gm,'<h3>$1</h3>')
-    .replace(/^## (.*)$/gm,'<h2>$1</h2>')
-    .replace(/^# (.*)$/gm,'<h1>$1</h1>')
-    .replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')
-    .replace(/\*(.*?)\*/g,'<i>$1</i>')
-    .replace(/`(.*?)`/g,'<code>$1</code>')
-    .replace(/^- (.*)$/gm,'<li>$1</li>')
-    .replace(/^\d\. (.*)$/gm,'<li>$1</li>')
-    .replace(/\n\n/g,'<br><br>');
+  let o=esc(src)
+    .replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\*(.*?)\*/g,'<i>$1</i>').replace(/`(.*?)`/g,'<code>$1</code>')
+    .replace(/^\s*[-*] (.*)$/gm,'<li>$1</li>').replace(/^\s*\d+\. (.*)$/gm,'<li>$1</li>');
+  o=o.replace(/(?:<li>[\s\S]*?<\/li>\n?)+/g,m=>'<ul>'+m.replace(/\n/g,'')+'</ul>');
+  return o.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
 }
 
-// ---------- PAGES ----------
-function pageDashboard(){
-  const openTasks = state.assignments.filter(a=>!a.done).sort((a,b)=>a.due.localeCompare(b.due));
-  const totalCredits = state.grades.reduce((s,g)=>s+g.credits,0);
-  const gpa = totalCredits ? (state.grades.reduce((s,g)=>s+g.credits*g.grade,0)/totalCredits).toFixed(2) : '—';
-  const overdueN = openTasks.filter(a=>urgencyOf(a)==='overdue').length;
+// ===== STORAGE =====
+const K='workshop:v2', KT='workshop:theme';
+const DB={
+  ok:(function(){try{localStorage.setItem('__t','1');localStorage.removeItem('__t');return true;}catch(e){return false;}})(),
+  get:function(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}},
+  set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}},
+  del:function(k){try{localStorage.removeItem(k);}catch(e){}}
+};
+function snapshot(){const c=Object.assign({},state);delete c.activeNote;return c;}
+let saveTimer=null;
+function toast(msg,long){const t=document.getElementById('toast');t.textContent=msg||'Saved';t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),long?2600:1100);}
+function persist(){
+  state.updated=Date.now();
+  if(DB.set(K,snapshot()))toast(); else toast('Storage full - not saved',true);
+  if(sync.token&&sync.gistId&&sync.auto)queuePush();
+}
+function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(persist,400);}
+function load(){
+  if(!DB.ok){toast('Private mode - nothing will save',true);return;}
+  const s=DB.get(K);
+  if(s&&typeof s==='object'){Object.assign(state,s);state.activeNote=null;state.memories=state.memories||[];state.grades=state.grades||{};}
+  if(state.skin!==4){
+    DEFAULT_SUBJECTS.forEach(function(d){
+      const mine=state.subjects.filter(x=>x.id===d.id)[0];
+      if(mine)mine.color=d.color;
+    });
+    state.skin=4;
+  }
+  const th=localStorage.getItem(KT);
+  if(th==='light'||th==='dark')document.body.dataset.theme=th;
+}
+function exportData(){
+  const b=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='workshop-'+isoToday()+'.json';a.click();URL.revokeObjectURL(a.href);
+}
+function importData(e){
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=function(){try{Object.assign(state,JSON.parse(r.result));state.activeNote=null;persist();render();toast('Restored');}catch(x){toast('Bad backup file',true);}};
+  r.readAsText(f);e.target.value='';
+}
+function wipeData(){if(!confirm('Erase everything saved in this browser?'))return;DB.del(K);state=freshState();persist();render();}
+
+// ===== SYNC (GitHub Gist) =====
+const KS='workshop:sync', GFILE='workshop.json';
+let sync=DB.get(KS)||{token:'',gistId:'',auto:true,last:0,err:''};
+let pushTimer=null, syncing=false;
+function saveSync(){DB.set(KS,sync);}
+function agoTxt(ms){
+  if(!ms)return 'never';
+  const s=Math.round((Date.now()-ms)/1000);
+  if(s<60)return 'just now';
+  if(s<3600)return Math.floor(s/60)+'m ago';
+  if(s<86400)return Math.floor(s/3600)+'h ago';
+  return Math.floor(s/86400)+'d ago';
+}
+function syncPill(){
+  const el=document.getElementById('syncPill');
+  if(!el)return;
+  if(!sync.token||!sync.gistId){el.className='syncpill';el.innerHTML='sync: <b>off</b>';return;}
+  if(syncing){el.className='syncpill';el.innerHTML='sync: <b>working...</b>';return;}
+  if(sync.err){el.className='syncpill bad';el.innerHTML='sync: <b>'+esc(sync.err)+'</b>';return;}
+  el.className='syncpill';el.innerHTML='synced <b>'+agoTxt(sync.last)+'</b>';
+}
+function gh(path,opts){
+  opts=opts||{};
+  opts.headers={'Authorization':'Bearer '+sync.token,'Accept':'application/vnd.github+json','Content-Type':'application/json'};
+  return fetch('https://api.github.com'+path,opts).then(function(r){
+    if(r.status===401)throw new Error('bad token');
+    if(r.status===404)throw new Error('gist not found');
+    if(r.status===403)throw new Error('rate limited');
+    if(!r.ok)throw new Error('http '+r.status);
+    return r.json();
+  });
+}
+function syncBody(){
+  const s=snapshot();
+  let body=JSON.stringify({v:2,updated:state.updated||Date.now(),state:s});
+  if(body.length>900000){
+    const trimmed=Object.assign({},s,{memories:[]});
+    body=JSON.stringify({v:2,updated:state.updated||Date.now(),state:trimmed,photosSkipped:true});
+  }
+  return body;
+}
+function gistPush(quiet){
+  if(!sync.token||!sync.gistId)return Promise.resolve();
+  syncing=true;syncPill();
+  const files={};files[GFILE]={content:syncBody()};
+  return gh('/gists/'+sync.gistId,{method:'PATCH',body:JSON.stringify({files:files})})
+    .then(function(){sync.last=Date.now();sync.err='';saveSync();syncing=false;syncPill();if(!quiet)toast('Pushed to cloud');})
+    .catch(function(e){sync.err=e.message;saveSync();syncing=false;syncPill();if(!quiet)toast('Push failed: '+e.message,true);});
+}
+function queuePush(){clearTimeout(pushTimer);pushTimer=setTimeout(function(){gistPush(true);},6000);}
+function gistPull(quiet){
+  if(!sync.token||!sync.gistId)return Promise.resolve();
+  syncing=true;syncPill();
+  return gh('/gists/'+sync.gistId).then(function(g){
+    const f=g.files&&g.files[GFILE];
+    if(!f)throw new Error('no data in gist');
+    return f.truncated?fetch(f.raw_url).then(r=>r.text()):Promise.resolve(f.content);
+  }).then(function(txt){
+    const d=JSON.parse(txt);
+    const remote=d.updated||0, local=state.updated||0;
+    if(remote<=local){
+      sync.last=Date.now();sync.err='';saveSync();syncing=false;syncPill();
+      if(!quiet)toast('Already up to date');
+      return;
+    }
+    if(!quiet||local===0||confirm('Cloud copy is newer ('+agoTxt(remote)+'). Load it? Unsaved local changes will be replaced.')){
+      const incoming=d.state||d;
+      if(d.photosSkipped)incoming.memories=state.memories;
+      Object.assign(state,incoming);
+      state.activeNote=null;
+      DB.set(K,snapshot());
+      sync.last=Date.now();sync.err='';saveSync();syncing=false;
+      render();toast('Pulled from cloud');
+      return;
+    }
+    sync.last=Date.now();saveSync();syncing=false;syncPill();
+  }).catch(function(e){
+    sync.err=e.message;saveSync();syncing=false;syncPill();
+    if(!quiet)toast('Pull failed: '+e.message,true);
+  });
+}
+function gistCreate(){
+  const tok=document.getElementById('syTok').value.trim();
+  if(!tok){toast('Paste a token first',true);return;}
+  sync.token=tok;saveSync();
+  syncing=true;syncPill();
+  const files={};files[GFILE]={content:syncBody()};
+  gh('/gists',{method:'POST',body:JSON.stringify({description:'Workshop study data',public:false,files:files})})
+    .then(function(g){
+      sync.gistId=g.id;sync.last=Date.now();sync.err='';saveSync();syncing=false;
+      render();toast('Cloud set up');
+    })
+    .catch(function(e){sync.err=e.message;saveSync();syncing=false;render();toast('Setup failed: '+e.message,true);});
+}
+function syncSave(){
+  sync.token=document.getElementById('syTok').value.trim();
+  sync.gistId=document.getElementById('syGist').value.trim();
+  sync.err='';saveSync();
+  if(sync.token&&sync.gistId)gistPull(false).then(render); else render();
+}
+function syncOff(){
+  if(!confirm('Disconnect cloud sync? Local data stays.'))return;
+  sync={token:'',gistId:'',auto:true,last:0,err:''};saveSync();render();
+}
+function toggleAuto(v){sync.auto=v;saveSync();}
+function pageSync(){
+  const on=sync.token&&sync.gistId;
   return `
-  <h1 class="page-title">Welcome back</h1>
-  <p class="page-sub">Here's where things stand today.</p>
-  <div class="grid-3">
-    <div class="panel stat"><div class="num">${state.subjects.length}</div><div class="lbl">Subjects</div></div>
-    <div class="panel stat ${overdueN>0?'warn':''}"><div class="num">${openTasks.length}</div><div class="lbl">Open Tasks${overdueN>0?` · ${overdueN} overdue`:''}</div></div>
-    <div class="panel stat"><div class="num">${gpa}</div><div class="lbl">Current GPA</div></div>
+  <h1 class="page-title">Cloud Sync</h1>
+  <p class="page-sub">Keeps phone and laptop on the same data using a private GitHub Gist.</p>
+
+  <div class="panel">
+    <div class="panel-title">Status</div>
+    <div class="calc-result" style="font-size:16px;">${on?(sync.err?('Error: '+esc(sync.err)):('Connected &middot; last synced '+agoTxt(sync.last))):'Not connected'}</div>
+    ${on?`<div class="muted" style="margin-top:6px;">Gist ID: ${esc(sync.gistId)}</div>
+    <div class="row" style="margin-top:14px;">
+      <button class="btn" onclick="gistPush(false)">Push now</button>
+      <button class="btn secondary" onclick="gistPull(false)">Pull now</button>
+      <button class="btn secondary" onclick="syncOff()">Disconnect</button>
+    </div>
+    <div class="row" style="margin-top:14px;align-items:center;">
+      <input type="checkbox" id="syAuto" ${sync.auto?'checked':''} onchange="toggleAuto(this.checked)">
+      <label style="margin:0;text-transform:none;font-size:12px;">Auto-push a few seconds after any change</label>
+    </div>`:''}
   </div>
-  <div class="grid-2">
-    <div class="panel">
-      <div class="panel-title">Upcoming <span class="muted" style="text-transform:none;">${openTasks.length} pending</span></div>
-      ${openTasks.slice(0,5).map(a=>{
-        const u=urgencyOf(a);
-        return `
-        <div class="list-item ${u==='overdue'?'urgent-overdue':u==='soon'?'urgent-soon':''}">
-          <div style="display:flex;align-items:center;gap:8px;">
-            ${u==='overdue'?'<span class="pulse-dot"></span>':''}
-            <div><div style="font-size:13px;">${a.title}</div><div class="muted">${subjName(a.subjectId)} — ${u==='overdue'?'overdue since '+a.due:'due '+a.due}</div></div>
-          </div>
-          <span class="tag ${a.type==='Exam'?'danger':'cyan'}">${a.type}</span>
-        </div>`;
-      }).join('') || '<p class="muted">Nothing pending. Nice.</p>'}
+
+  <div class="panel">
+    <div class="panel-title">${on?'Change connection':'Set up'}</div>
+    <div class="field">
+      <label>GitHub token (scope: gist)</label>
+      <input id="syTok" type="password" value="${esc(sync.token)}" placeholder="github_pat_...">
     </div>
-    <div class="panel">
-      <div class="panel-title">Recent Notes</div>
-      ${state.notes.slice(-4).reverse().map(n=>`
-        <div class="list-item" style="cursor:pointer" onclick="state.activeNote=${n.id};go('notes')">
-          <div><div style="font-size:13px;">${n.title}</div><div class="muted">${subjName(n.subjectId)} — ${n.updated}</div></div>
-        </div>`).join('') || '<p class="muted">No notes yet.</p>'}
+    <div class="field">
+      <label>Gist ID (leave blank and press Create)</label>
+      <input id="syGist" value="${esc(sync.gistId)}" placeholder="e.g. 3f9a2c...">
     </div>
+    <div class="row">
+      <button class="btn" onclick="gistCreate()">Create new gist</button>
+      <button class="btn secondary" onclick="syncSave()">Save &amp; pull</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">How to get a token</div>
+    <div class="md-preview">${md("1. Go to github.com/settings/tokens then Tokens (classic) then Generate new token\n2. Name it Workshop, set expiry to No expiration\n3. Tick only the **gist** checkbox. Nothing else.\n4. Generate, copy it, paste above, press Create new gist\n5. On your other device: open the site, paste the same token AND the Gist ID shown above, press Save and pull")}</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Read this</div>
+    <div class="md-preview">${md("- The token is stored in this browser. Anyone with access to this device can read it. Give it **gist scope only** so the worst case is your notes, not your repos.\n- The gist is secret, but secret is not private. Do not put anything sensitive in your notes.\n- Photos in Memories are skipped from sync when the payload gets too big. They stay local. Use backup for those.\n- Newer timestamp wins. If you edit on two devices at once, one side loses. Pull before you start working.")}</div>
   </div>`;
 }
 
-function pageSubjects(){
+// ===== NAV =====
+const NAV=[
+  {id:'today',label:'Today',icon:'\u{1F3E0}'},
+  {id:'schedule',label:'Schedule',icon:'\u{1F5D3}'},
+  {id:'todo',label:'To-Do',icon:'\u2705'},
+  {id:'notes',label:'Notes',icon:'\u{1F4DD}'},
+  {id:'grades',label:'GPA',icon:'\u{1F9EE}'},
+  {id:'tools',label:'Tools',icon:'\u{1F4D0}'},
+  {id:'memories',label:'Memories',icon:'\u{1F5BC}'},
+  {id:'sync',label:'Sync',icon:'\u2601\uFE0F'},
+];
+function go(p){state.page=p;state.activeNote=null;render();closeSidebar();window.scrollTo(0,0);}
+function renderNav(){
+  const b=urgentCount();
+  document.getElementById('nav').innerHTML=NAV.map(n=>
+    '<div class="nav-item '+(state.page===n.id?'active':'')+'" onclick="go(\''+n.id+'\')">'+
+    '<span>'+n.icon+'</span>'+n.label+
+    ((n.id==='todo'&&b)?'<span class="nav-badge">'+b+'</span>':'')+'</div>').join('');
+}
+
+// ===== TODAY =====
+function pageToday(){
+  const day=todayName(), now=nowMin(), list=classesOn(day);
+  const live=list.filter(c=>now>=c.m.s&&now<c.m.e)[0];
+  const open=openTodos().sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999'));
+  const late=open.filter(t=>urgency(t)==='overdue').length;
+  const head=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+  const units=state.subjects.reduce((a,s)=>a+(+s.units||0),0);
   return `
-  <h1 class="page-title">Subjects</h1>
-  <p class="page-sub">Everything is organized under a subject.</p>
+  <h1 class="page-title">${esc(head)}</h1>
+  <p class="page-sub">${list.length?(list.length+' class'+(list.length>1?'es':'')+' today'):'No classes today.'} &middot; ${open.length} task${open.length===1?'':'s'} open</p>
+
+  <div class="grid-3">
+    <div class="panel stat"><div class="num">${list.length}</div><div class="lbl">Classes today</div></div>
+    <div class="panel stat ${late?'warn':''}"><div class="num">${open.length}</div><div class="lbl">Open tasks${late?(' &middot; '+late+' late'):''}</div></div>
+    <div class="panel stat"><div class="num">${units}</div><div class="lbl">Total units</div></div>
+  </div>
+
   <div class="panel">
-    <div class="panel-title">Add Subject</div>
+    <div class="panel-title">${live?'Class right now':'Today\'s classes'}</div>
+    ${list.length?list.map(c=>{
+      const on=now>=c.m.s&&now<c.m.e, past=now>=c.m.e;
+      return `<div class="list-item ${on?'now':''}" style="${past?'opacity:.45;':''}">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="dot ${on?'live':''}" style="background:${esc(c.s.color)}"></span>
+          <div><div class="ttl">${esc(c.s.code)}</div><div class="muted">${esc(c.s.name)} &middot; ${esc(c.m.room)}</div></div>
+        </div>
+        <span class="tag ${on?'cyan':''}">${hhmm(c.m.s)} - ${hhmm(c.m.e)}</span>
+      </div>`;}).join(''):'<p class="muted">Rest day. Enjoy it.</p>'}
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Add a task <span class="muted" style="text-transform:none;">subject + what to do</span></div>
+    ${todoForm('q')}
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">What's due <span class="muted" style="text-transform:none;">${open.length} open</span></div>
+    ${open.length?open.slice(0,8).map(todoRow).join(''):'<p class="muted">Nothing pending. Nice.</p>'}
+    ${open.length>8?'<button class="btn secondary" onclick="go(\'todo\')">See all '+open.length+'</button>':''}
+  </div>`;
+}
+
+// ===== SCHEDULE =====
+function pageSchedule(){
+  const START=420, END=960, H=560, PX=H/(END-START);
+  const today=todayName();
+  const ticks=[];for(let m=START;m<=END;m+=60)ticks.push(m);
+  const grid=`
+  <div class="sched">
+    <div class="hd"></div>${DAYS.map(d=>'<div class="hd '+(d===today?'today':'')+'">'+d+'</div>').join('')}
+    <div class="gutter" style="height:${H}px;">${ticks.map(m=>'<span style="top:'+((m-START)*PX)+'px">'+hhmm(m).replace(':00','')+'</span>').join('')}</div>
+    ${DAYS.map(d=>`<div class="col" style="height:${H}px;">
+      ${(d===today&&nowMin()>=START&&nowMin()<=END)?`<div class="nowline" style="top:${(nowMin()-START)*PX}px;"></div>`:''}
+      ${classesOn(d).map(c=>`
+        <div class="blk" style="top:${(c.m.s-START)*PX}px;height:${(c.m.e-c.m.s)*PX-4}px;background:${esc(c.s.color)}22;border-left-color:${esc(c.s.color)};">
+          <b style="color:${esc(c.s.color)}">${esc(c.s.code)}</b>
+          <small>${hhmm(c.m.s)} - ${hhmm(c.m.e)}</small>
+          <small>${esc(c.m.room)}</small>
+        </div>`).join('')}
+    </div>`).join('')}
+  </div>`;
+  const mobile='<div class="sched-mobile">'+DAYS.map(d=>{
+    const cl=classesOn(d);
+    return '<div class="panel" style="'+(d===today?'border-color:var(--cyan);':'')+'">'+
+      '<div class="panel-title">'+d+(d===today?' &middot; today':'')+'</div>'+
+      (cl.length?cl.map(c=>'<div class="list-item"><div style="display:flex;align-items:center;gap:10px;">'+
+        '<span class="dot" style="background:'+esc(c.s.color)+'"></span>'+
+        '<div><div class="ttl">'+esc(c.s.code)+'</div><div class="muted">'+esc(c.m.room)+'</div></div></div>'+
+        '<span class="tag">'+hhmm(c.m.s)+' - '+hhmm(c.m.e)+'</span></div>').join(''):'<p class="muted">Free.</p>')+
+    '</div>';}).join('')+'</div>';
+  const units=state.subjects.reduce((a,s)=>a+(+s.units||0),0);
+  return `
+  <h1 class="page-title">Weekly Schedule</h1>
+  <p class="page-sub">BSCE1-A2 &middot; ${state.subjects.length} subjects &middot; ${units} units</p>
+  <div class="panel">${grid}${mobile}</div>
+  <div class="panel">
+    <div class="panel-title">Subjects</div>
+    ${state.subjects.map(s=>`
+      <div class="list-item">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="dot" style="background:${esc(s.color)}"></span>
+          <div><div class="ttl">${esc(s.code)}</div><div class="muted">${esc(s.name)}${(s.meets&&s.meets.length)?' &middot; '+esc(s.meets.map(m=>m.d.join('')+' '+hhmm(m.s)+'-'+hhmm(m.e)).join(' / ')):''}</div></div>
+        </div>
+        <div class="row" style="align-items:center;">
+          <span class="tag cyan">${esc(s.units)} u</span>
+          <button class="x-btn" onclick="delSubject(${s.id})">&#10005;</button>
+        </div>
+      </div>`).join('')}
+  </div>
+  <div class="panel">
+    <div class="panel-title">Add subject</div>
     <div class="row">
-      <input id="newSubName" placeholder="Subject name" style="flex:2;">
-      <input id="newSubCredits" placeholder="Credits" type="number" style="flex:1;">
-      <input id="newSubColor" type="color" value="#5fd4d6" style="width:44px;padding:2px;">
+      <div style="flex:1;min-width:110px;"><label>Code</label><input id="sCode" placeholder="MATH 101"></div>
+      <div style="flex:2;min-width:150px;"><label>Full name</label><input id="sName" placeholder="Calculus I"></div>
+      <div style="width:80px;"><label>Units</label><input id="sUnits" type="number" value="3"></div>
       <button class="btn" onclick="addSubject()">Add</button>
     </div>
-  </div>
-  <div class="grid-3">
-    ${state.subjects.map(s=>{
-      const noteCount = state.notes.filter(n=>n.subjectId===s.id).length;
-      const taskCount = state.assignments.filter(a=>a.subjectId===s.id && !a.done).length;
-      return `<div class="panel">
-        <div style="width:100%;height:4px;background:${s.color};margin:-20px -20px 14px;border-radius:2px 2px 0 0;"></div>
-        <div class="panel-title" style="color:${s.color}">${s.name}<button class="x-btn" onclick="removeItem('subjects',${s.id})">✕</button></div>
-        <div class="muted">${s.credits} credits · ${noteCount} notes · ${taskCount} open tasks</div>
-      </div>`;
-    }).join('')}
   </div>`;
 }
 function addSubject(){
-  const name=document.getElementById('newSubName').value.trim();
-  const credits=parseInt(document.getElementById('newSubCredits').value)||0;
-  const color=document.getElementById('newSubColor').value;
-  if(!name) return;
-  state.subjects.push({id:uid('subjects'),name,credits,color});
+  const code=document.getElementById('sCode').value.trim();
+  if(!code)return;
+  state.subjects.push({id:uid('subjects'),code:code,name:document.getElementById('sName').value.trim()||code,
+    units:parseFloat(document.getElementById('sUnits').value)||0,color:'#8b96ab',meets:[]});
+  render();
+}
+function delSubject(id){
+  const n=state.todos.filter(t=>t.subjectId===id).length+state.notes.filter(t=>t.subjectId===id).length;
+  if(n&&!confirm(n+' task(s)/note(s) linked. Delete those too?'))return;
+  state.todos=state.todos.filter(t=>t.subjectId!==id);
+  state.notes=state.notes.filter(t=>t.subjectId!==id);
+  state.subjects=state.subjects.filter(s=>s.id!==id);
+  delete state.grades[id];
   render();
 }
 
+// ===== TO-DO =====
+function todoForm(pfx){
+  return `<div class="row">
+    <div style="flex:1;min-width:130px;"><label>Subject</label>
+      <select id="${pfx}Subj">
+        ${state.subjects.map(s=>'<option value="'+s.id+'">'+esc(s.code)+'</option>').join('')}
+        <option value="0">General</option>
+      </select></div>
+    <div style="flex:2;min-width:170px;"><label>What to do</label>
+      <input id="${pfx}Text" placeholder="e.g. Problem set 3, pages 40-42" onkeydown="if(event.key==='Enter')addTodo('${pfx}')"></div>
+    <div style="flex:1;min-width:130px;"><label>Due (optional)</label><input id="${pfx}Due" type="date"></div>
+    <button class="btn" onclick="addTodo('${pfx}')">Add</button>
+  </div>`;
+}
+function addTodo(pfx){
+  const text=document.getElementById(pfx+'Text').value.trim();
+  if(!text)return;
+  state.todos.push({id:uid('todos'),subjectId:parseInt(document.getElementById(pfx+'Subj').value)||0,
+    text:text,due:document.getElementById(pfx+'Due').value||'',done:false,made:isoToday()});
+  render();
+}
+function todoRow(t){
+  const u=urgency(t);
+  return `<div class="list-item ${u} ${t.done?'done':''}">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <input type="checkbox" ${t.done?'checked':''} onchange="toggleTodo(${t.id})">
+      <span class="dot" style="background:${esc(subjColor(t.subjectId))}"></span>
+      <div><div class="ttl">${esc(t.text)}</div><div class="muted">${subjCode(t.subjectId)} &middot; ${esc(dueLabel(t))}</div></div>
+    </div>
+    <button class="x-btn" onclick="delTodo(${t.id})">&#10005;</button>
+  </div>`;
+}
+function toggleTodo(id){const t=state.todos.filter(x=>x.id===id)[0];t.done=!t.done;render();}
+function delTodo(id){state.todos=state.todos.filter(t=>t.id!==id);render();}
+function clearDone(){state.todos=state.todos.filter(t=>!t.done);render();}
+function pageTodo(){
+  const open=openTodos(), done=state.todos.filter(t=>t.done);
+  const byDate=open.slice().sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999'));
+  const groups=state.subjects.map(s=>({s:s,items:open.filter(t=>t.subjectId===s.id)})).filter(g=>g.items.length);
+  const gen=open.filter(t=>!subj(t.subjectId));
+  return `
+  <h1 class="page-title">To-Do</h1>
+  <p class="page-sub">Pick a subject, write what to do. That's it.</p>
+  <div class="panel"><div class="panel-title">Add task</div>${todoForm('t')}</div>
+  <div class="panel">
+    <div class="panel-title">By deadline <span class="muted" style="text-transform:none;">${open.length} open</span></div>
+    ${byDate.length?byDate.map(todoRow).join(''):'<p class="muted">All clear.</p>'}
+  </div>
+  ${(groups.length||gen.length)?`<div class="panel">
+    <div class="panel-title">By subject</div>
+    ${groups.map(g=>'<div style="margin-bottom:14px;"><div class="muted" style="font-family:\'JetBrains Mono\';margin-bottom:6px;color:'+esc(g.s.color)+'">'+esc(g.s.code)+' - '+g.items.length+'</div>'+g.items.map(todoRow).join('')+'</div>').join('')}
+    ${gen.length?('<div><div class="muted" style="font-family:\'JetBrains Mono\';margin-bottom:6px;">General - '+gen.length+'</div>'+gen.map(todoRow).join('')+'</div>'):''}
+  </div>`:''}
+  ${done.length?`<div class="panel">
+    <div class="panel-title">Done <button class="mini-btn warn" onclick="clearDone()">clear ${done.length}</button></div>
+    ${done.slice(-10).reverse().map(todoRow).join('')}
+  </div>`:''}`;
+}
+
+// ===== NOTES =====
 function pageNotes(){
   if(state.activeNote){
-    const n = state.notes.find(x=>x.id===state.activeNote);
+    const n=state.notes.filter(x=>x.id===state.activeNote)[0];
+    if(!n){state.activeNote=null;return pageNotes();}
     return `
-    <h1 class="page-title">${n.title}</h1>
-    <p class="page-sub">${subjName(n.subjectId)} · last updated ${n.updated}</p>
+    <h1 class="page-title">${esc(n.title)}</h1>
+    <p class="page-sub">${subjCode(n.subjectId)} &middot; updated ${esc(n.updated)}</p>
     <div class="grid-2">
       <div class="panel">
-        <div class="panel-title">Markdown Source</div>
-        <textarea id="noteBody" rows="16" oninput="liveMd()">${n.body}</textarea>
+        <div class="panel-title">Write (markdown)</div>
+        <textarea id="noteBody" rows="16" oninput="liveMd()">${esc(n.body)}</textarea>
         <div class="row" style="margin-top:12px;">
           <button class="btn" onclick="saveNote(${n.id})">Save</button>
           <button class="btn secondary" onclick="state.activeNote=null;render()">Back</button>
-          <button class="btn danger" onclick="removeItem('notes',${n.id});state.activeNote=null;render()">Delete</button>
+          <button class="btn danger" onclick="delNote(${n.id})">Delete</button>
         </div>
       </div>
-      <div class="panel">
-        <div class="panel-title">Preview</div>
-        <div class="md-preview" id="mdPreview">${md(n.body)}</div>
-      </div>
+      <div class="panel"><div class="panel-title">Preview</div><div class="md-preview" id="mdPreview">${md(n.body)}</div></div>
     </div>`;
   }
   return `
   <h1 class="page-title">Notes</h1>
-  <p class="page-sub">Markdown notes, grouped by subject.</p>
+  <p class="page-sub">Markdown notes tied to a subject.</p>
   <div class="panel">
-    <div class="panel-title">New Note</div>
+    <div class="panel-title">New note</div>
     <div class="row">
-      <select id="newNoteSubject" style="flex:1;">${state.subjects.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select>
-      <input id="newNoteTitle" placeholder="Title" style="flex:2;">
+      <div style="flex:1;min-width:130px;"><label>Subject</label><select id="nSubj">${state.subjects.map(s=>'<option value="'+s.id+'">'+esc(s.code)+'</option>').join('')}<option value="0">General</option></select></div>
+      <div style="flex:2;min-width:170px;"><label>Title</label><input id="nTitle" placeholder="Topic" onkeydown="if(event.key==='Enter')addNote()"></div>
       <button class="btn" onclick="addNote()">Create</button>
     </div>
   </div>
   <div class="grid-2">
-    ${state.notes.map(n=>`
+    ${state.notes.slice().reverse().map(n=>`
       <div class="note-card" onclick="state.activeNote=${n.id};render()">
-        <h4>${n.title}</h4>
-        <p>${n.body.replace(/[#*`]/g,'')}</p>
-        <div class="muted" style="margin-top:8px;">${subjName(n.subjectId)} · ${n.updated}</div>
-      </div>`).join('') || '<p class="muted">No notes yet.</p>'}
+        <h4 style="color:${esc(subjColor(n.subjectId))}">${esc(n.title)}</h4>
+        <p>${esc(n.body.replace(/[#*`]/g,''))}</p>
+        <div class="muted" style="margin-top:8px;">${subjCode(n.subjectId)} &middot; ${esc(n.updated)}</div>
+      </div>`).join('')||'<p class="muted">No notes yet.</p>'}
   </div>`;
 }
 function addNote(){
-  const subjectId=parseInt(document.getElementById('newNoteSubject').value);
-  const title=document.getElementById('newNoteTitle').value.trim();
-  if(!title) return;
+  const title=document.getElementById('nTitle').value.trim();
+  if(!title)return;
   const id=uid('notes');
-  state.notes.push({id,subjectId,title,body:'# '+title+'\n\nStart writing...',updated:new Date().toISOString().slice(0,10)});
-  state.activeNote=id;
-  render();
+  state.notes.push({id:id,subjectId:parseInt(document.getElementById('nSubj').value)||0,title:title,
+    body:'# '+title+'\n\nStart writing...',updated:isoToday()});
+  state.activeNote=id;render();
 }
-function saveNote(id){
-  const n=state.notes.find(x=>x.id===id);
-  n.body=document.getElementById('noteBody').value;
-  n.updated=new Date().toISOString().slice(0,10);
-  render();
-}
-function liveMd(){
-  document.getElementById('mdPreview').innerHTML = md(document.getElementById('noteBody').value);
-}
+function saveNote(id){const n=state.notes.filter(x=>x.id===id)[0];n.body=document.getElementById('noteBody').value;n.updated=isoToday();render();}
+function delNote(id){state.notes=state.notes.filter(n=>n.id!==id);state.activeNote=null;render();}
+function liveMd(){document.getElementById('mdPreview').innerHTML=md(document.getElementById('noteBody').value);}
 
-function pagePdfs(){
+// ===== GPA =====
+function pageGrades(){
+  const rows=state.subjects.filter(s=>state.grades[s.id]);
+  const units=rows.reduce((a,s)=>a+(+s.units||0),0);
+  const gwa=units?(rows.reduce((a,s)=>a+s.units*state.grades[s.id],0)/units):0;
+  const remark=!units?'--':gwa<=1.75?'Excellent':gwa<=2.50?'Good':gwa<=3.00?'Passing':'Failed';
+  const total=state.subjects.reduce((a,s)=>a+(+s.units||0),0);
   return `
-  <h1 class="page-title">PDF Library</h1>
-  <p class="page-sub">Track reference PDFs per subject.</p>
-  <div class="panel">
-    <div class="panel-title">Add PDF Entry</div>
-    <div class="row">
-      <input id="newPdfName" placeholder="filename.pdf" style="flex:2;">
-      <select id="newPdfSubject" style="flex:1;">${state.subjects.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select>
-      <button class="btn" onclick="addPdf()">Add</button>
-    </div>
-  </div>
-  <div class="panel">
-    ${state.pdfs.map(p=>`
-      <div class="list-item">
-        <div>📄 ${p.name}<div class="muted">${subjName(p.subjectId)} · ${p.size}</div></div>
-        <button class="x-btn" onclick="removeItem('pdfs',${p.id})">✕</button>
-      </div>`).join('') || '<p class="muted">No PDFs indexed yet.</p>'}
-  </div>`;
-}
-function addPdf(){
-  const name=document.getElementById('newPdfName').value.trim();
-  const subjectId=parseInt(document.getElementById('newPdfSubject').value);
-  if(!name) return;
-  state.pdfs.push({id:uid('pdfs'),name,subjectId,size:'—'});
-  render();
-}
-
-function pageTracker(){
-  const sorted=[...state.assignments].sort((a,b)=>a.due.localeCompare(b.due));
-  return `
-  <h1 class="page-title">Assignment & Exam Tracker</h1>
-  <p class="page-sub">Deadlines across all subjects.</p>
-  <div class="panel">
-    <div class="panel-title">Add Item</div>
-    <div class="row">
-      <input id="newTaskTitle" placeholder="Title" style="flex:2;">
-      <select id="newTaskSubject" style="flex:1;">${state.subjects.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select>
-      <select id="newTaskType" style="flex:1;"><option>Assignment</option><option>Exam</option></select>
-      <input id="newTaskDue" type="date" style="flex:1;">
-      <button class="btn" onclick="addTask()">Add</button>
-    </div>
-  </div>
-  <div class="panel">
-    ${sorted.map(a=>{
-      const u=urgencyOf(a);
-      return `
-      <div class="list-item ${u==='overdue'?'urgent-overdue':u==='soon'?'urgent-soon':''}">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <input type="checkbox" ${a.done?'checked':''} onchange="toggleTask(${a.id})">
-          ${(!a.done && u==='overdue')?'<span class="pulse-dot"></span>':''}
-          <div style="${a.done?'text-decoration:line-through;color:var(--muted);':''}">
-            ${a.title}<div class="muted">${subjName(a.subjectId)} · ${u==='overdue'&&!a.done?'overdue since '+a.due:'due '+a.due}</div>
-          </div>
-        </div>
-        <div class="row">
-          <span class="tag ${a.type==='Exam'?'danger':'cyan'}">${a.type}</span>
-          <button class="x-btn" onclick="removeItem('assignments',${a.id})">✕</button>
-        </div>
-      </div>`;
-    }).join('') || '<p class="muted">Nothing tracked yet.</p>'}
-  </div>`;
-}
-function addTask(){
-  const title=document.getElementById('newTaskTitle').value.trim();
-  const subjectId=parseInt(document.getElementById('newTaskSubject').value);
-  const type=document.getElementById('newTaskType').value;
-  const due=document.getElementById('newTaskDue').value || '2026-01-01';
-  if(!title) return;
-  state.assignments.push({id:uid('assignments'),title,subjectId,type,due,done:false});
-  render();
-}
-function toggleTask(id){ const a=state.assignments.find(x=>x.id===id); a.done=!a.done; render(); }
-
-function pageGpa(){
-  const totalUnits = state.grades.reduce((s,g)=>s+g.credits,0);
-  const gwa = totalUnits ? (state.grades.reduce((s,g)=>s+g.credits*g.grade,0)/totalUnits).toFixed(3) : '0.000';
-  return `
-  <h1 class="page-title">GPA Calculator</h1>
-  <p class="page-sub">Philippine grading scale — 1.00 is highest, 3.00 is passing, 5.00 is failing. Lower average is better.</p>
-  <div class="panel">
-    <div class="panel-title">Add Course</div>
-    <div class="row">
-      <input id="gpaName" placeholder="Course name" style="flex:2;">
-      <input id="gpaCredits" placeholder="Units" type="number" style="flex:1;">
-      <select id="gpaGrade" style="flex:1;">${gpaScale.map(g=>`<option value="${g}">${g.toFixed(2)}</option>`).join('')}</select>
-      <button class="btn" onclick="addGrade()">Add</button>
-    </div>
-  </div>
-  <div class="panel">
-    ${state.grades.map(g=>`
-      <div class="list-item">
-        <div>${g.name}<div class="muted">${g.credits} units</div></div>
-        <div class="row" style="align-items:center;">
-          <span class="tag ${g.grade<=2.0?'cyan':g.grade<=3.0?'amber':'danger'}">${Number(g.grade).toFixed(2)}</span>
-          <button class="x-btn" onclick="removeItem('grades',${g.id})">✕</button>
-        </div>
-      </div>`).join('') || '<p class="muted">No courses added yet.</p>'}
-  </div>
+  <h1 class="page-title">GPA / GWA</h1>
+  <p class="page-sub">Philippine scale &mdash; 1.00 highest, 3.00 passing, 5.00 failed. Lower is better.</p>
   <div class="panel">
     <div class="panel-title">Result</div>
-    <div class="calc-result">GWA: ${gwa}</div>
-    <div class="muted">${totalUnits} total units · ${gpaRemark(parseFloat(gwa))}</div>
+    <div class="calc-result" style="font-size:30px;">${units?gwa.toFixed(3):'--'}</div>
+    <div class="muted">${units} of ${total} units graded &middot; ${remark}</div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">Enter grades</div>
+    ${state.subjects.map(s=>`
+      <div class="list-item">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="dot" style="background:${esc(s.color)}"></span>
+          <div><div class="ttl">${esc(s.code)}</div><div class="muted">${esc(s.units)} units</div></div>
+        </div>
+        <select style="width:110px;" onchange="setGrade(${s.id},this.value)">
+          <option value="">--</option>
+          ${PH_SCALE.map(g=>'<option value="'+g+'" '+(state.grades[s.id]===g?'selected':'')+'>'+g.toFixed(2)+'</option>').join('')}
+        </select>
+      </div>`).join('')}
   </div>`;
 }
-function addGrade(){
-  const name=document.getElementById('gpaName').value.trim();
-  const credits=parseFloat(document.getElementById('gpaCredits').value)||0;
-  const grade=parseFloat(document.getElementById('gpaGrade').value);
-  if(!name||!credits) return;
-  state.grades.push({id:uid('grades'),subjectId:null,name,credits,grade});
-  render();
-}
+function setGrade(id,v){if(v==='')delete state.grades[id];else state.grades[id]=parseFloat(v);render();}
 
-function pageCalc(){
+// ===== TOOLS =====
+function pageTools(){
+  const cats=[];state.formulas.forEach(f=>{if(cats.indexOf(f.cat)<0)cats.push(f.cat);});
   return `
-  <h1 class="page-title">Engineering Calculators</h1>
-  <p class="page-sub">Unit conversion, section properties, beam basics, circuits, and trig.</p>
+  <h1 class="page-title">Tools</h1>
+  <p class="page-sub">Converters, quick math, and your formula sheet.</p>
   <div class="grid-2">
     <div class="panel">
-      <div class="panel-title">Unit Converter — Length</div>
+      <div class="panel-title">Length converter</div>
       <div class="field"><label>Value</label><input id="uc_val" type="number" value="1" oninput="calcUnit()"></div>
       <div class="row">
-        <div class="field" style="flex:1;"><label>From</label><select id="uc_from" onchange="calcUnit()">${['m','ft','in','mm','cm','km','mi'].map(u=>`<option>${u}</option>`).join('')}</select></div>
-        <div class="field" style="flex:1;"><label>To</label><select id="uc_to" onchange="calcUnit()">${['ft','m','in','mm','cm','km','mi'].map(u=>`<option>${u}</option>`).join('')}</select></div>
+        <div style="flex:1;"><label>From</label><select id="uc_from" onchange="calcUnit()">${['m','ft','in','mm','cm','km','mi'].map(u=>'<option>'+u+'</option>').join('')}</select></div>
+        <div style="flex:1;"><label>To</label><select id="uc_to" onchange="calcUnit()">${['ft','m','in','mm','cm','km','mi'].map(u=>'<option>'+u+'</option>').join('')}</select></div>
       </div>
-      <div class="calc-result" id="uc_result">—</div>
+      <div class="calc-result" id="uc_result">--</div>
     </div>
     <div class="panel">
-      <div class="panel-title">Unit Converter — Mass, Force & Pressure</div>
-      <div class="field"><label>Category</label>
-        <select id="mfp_cat" onchange="calcMFP()">
-          <option value="mass">Mass</option>
-          <option value="force">Force</option>
-          <option value="pressure">Pressure</option>
-        </select>
-      </div>
+      <div class="panel-title">Mass / Force / Pressure</div>
+      <div class="field"><label>Category</label><select id="mfp_cat" onchange="fillMFP();calcMFP()">
+        <option value="mass">Mass</option><option value="force">Force</option><option value="pressure">Pressure</option></select></div>
       <div class="field"><label>Value</label><input id="mfp_val" type="number" value="1" oninput="calcMFP()"></div>
       <div class="row">
-        <div class="field" style="flex:1;"><label>From</label><select id="mfp_from" onchange="calcMFP()"></select></div>
-        <div class="field" style="flex:1;"><label>To</label><select id="mfp_to" onchange="calcMFP()"></select></div>
+        <div style="flex:1;"><label>From</label><select id="mfp_from" onchange="calcMFP()"></select></div>
+        <div style="flex:1;"><label>To</label><select id="mfp_to" onchange="calcMFP()"></select></div>
       </div>
-      <div class="calc-result" id="mfp_result">—</div>
+      <div class="calc-result" id="mfp_result">--</div>
     </div>
   </div>
   <div class="grid-2">
     <div class="panel">
-      <div class="panel-title">Rectangle: Area & Volume</div>
+      <div class="panel-title">Area &amp; volume</div>
       <div class="row">
-        <div class="field" style="flex:1;"><label>Width (m)</label><input id="av_w" type="number" value="1" oninput="calcAV()"></div>
-        <div class="field" style="flex:1;"><label>Height (m)</label><input id="av_h" type="number" value="1" oninput="calcAV()"></div>
-        <div class="field" style="flex:1;"><label>Depth (m, opt.)</label><input id="av_d" type="number" placeholder="—" oninput="calcAV()"></div>
+        <div style="flex:1;"><label>Width (m)</label><input id="av_w" type="number" value="1" oninput="calcAV()"></div>
+        <div style="flex:1;"><label>Height (m)</label><input id="av_h" type="number" value="1" oninput="calcAV()"></div>
+        <div style="flex:1;"><label>Depth (m)</label><input id="av_d" type="number" placeholder="--" oninput="calcAV()"></div>
       </div>
-      <div class="calc-result" id="av_result">—</div>
+      <div class="calc-result" id="av_result">--</div>
     </div>
     <div class="panel">
-      <div class="panel-title">Circle & Cylinder</div>
+      <div class="panel-title">Right triangle</div>
       <div class="row">
-        <div class="field" style="flex:1;"><label>Radius (m)</label><input id="circ_r" type="number" value="1" oninput="calcCircle()"></div>
-        <div class="field" style="flex:1;"><label>Height (m, opt.)</label><input id="circ_h" type="number" placeholder="—" oninput="calcCircle()"></div>
+        <div style="flex:1;"><label>Side a</label><input id="tri_a" type="number" value="3" oninput="calcTri()"></div>
+        <div style="flex:1;"><label>Side b</label><input id="tri_b" type="number" value="4" oninput="calcTri()"></div>
       </div>
-      <div class="calc-result" id="circ_result">—</div>
+      <div class="calc-result" id="tri_result">--</div>
     </div>
   </div>
-  <div class="grid-2">
-    <div class="panel">
-      <div class="panel-title">Ohm's Law</div>
-      <p class="muted" style="margin:-6px 0 12px;">Leave one field blank to solve for it.</p>
-      <div class="grid-3">
-        <div class="field"><label>Voltage (V)</label><input id="ohm_v" type="number" placeholder="—" oninput="calcOhm('v')"></div>
-        <div class="field"><label>Current (A)</label><input id="ohm_i" type="number" placeholder="—" oninput="calcOhm('i')"></div>
-        <div class="field"><label>Resistance (Ω)</label><input id="ohm_r" type="number" placeholder="—" oninput="calcOhm('r')"></div>
-      </div>
-      <div class="calc-result" id="ohm_result">—</div>
-    </div>
-    <div class="panel">
-      <div class="panel-title">Right Triangle Solver</div>
-      <div class="row">
-        <div class="field" style="flex:1;"><label>Side A</label><input id="tri_a" type="number" value="3" oninput="calcTri()"></div>
-        <div class="field" style="flex:1;"><label>Side B</label><input id="tri_b" type="number" value="4" oninput="calcTri()"></div>
-      </div>
-      <div class="calc-result" id="tri_result">—</div>
-    </div>
-  </div>
-  <div class="grid-2">
-    <div class="panel">
-      <div class="panel-title">Beam — Simply Supported, Point Load at Midspan</div>
-      <div class="grid-3">
-        <div class="field"><label>Load P (N)</label><input id="beam_p" type="number" value="1000" oninput="calcBeam()"></div>
-        <div class="field"><label>Span L (m)</label><input id="beam_l" type="number" value="4" oninput="calcBeam()"></div>
-        <div class="field"><label>E·I (N·m²)</label><input id="beam_ei" type="number" value="50000" oninput="calcBeam()"></div>
-      </div>
-      <div id="beam_result" class="calc-result">—</div>
-    </div>
-    <div class="panel">
-      <div class="panel-title">Beam — Cantilever, Point Load at Free End</div>
-      <div class="grid-3">
-        <div class="field"><label>Load P (N)</label><input id="cant_p" type="number" value="1000" oninput="calcCantilever()"></div>
-        <div class="field"><label>Length L (m)</label><input id="cant_l" type="number" value="2" oninput="calcCantilever()"></div>
-        <div class="field"><label>E·I (N·m²)</label><input id="cant_ei" type="number" value="50000" oninput="calcCantilever()"></div>
-      </div>
-      <div id="cant_result" class="calc-result">—</div>
-    </div>
-  </div>`;
-}
-const lengthToM = {m:1,ft:0.3048,in:0.0254,mm:0.001,cm:0.01,km:1000,mi:1609.344};
-function calcUnit(){
-  const val=parseFloat(document.getElementById('uc_val').value)||0;
-  const from=document.getElementById('uc_from').value, to=document.getElementById('uc_to').value;
-  const meters=val*lengthToM[from];
-  const result=meters/lengthToM[to];
-  document.getElementById('uc_result').textContent = `${val} ${from} = ${result.toFixed(5)} ${to}`;
-}
-const mfpUnits = {
-  mass:{kg:1, g:0.001, lb:0.453592, oz:0.0283495, ton:1000},
-  force:{N:1, kN:1000, lbf:4.44822, kgf:9.80665},
-  pressure:{Pa:1, kPa:1000, MPa:1000000, bar:100000, psi:6894.76, atm:101325},
-};
-function fillMFPSelects(){
-  const cat=document.getElementById('mfp_cat').value;
-  const units=Object.keys(mfpUnits[cat]);
-  document.getElementById('mfp_from').innerHTML = units.map(u=>`<option>${u}</option>`).join('');
-  document.getElementById('mfp_to').innerHTML = units.map(u=>`<option>${u}</option>`).join('');
-  document.getElementById('mfp_to').selectedIndex = Math.min(1, units.length-1);
-}
-function calcMFP(){
-  if(!document.getElementById('mfp_from').options.length) fillMFPSelects();
-  const cat=document.getElementById('mfp_cat').value;
-  const val=parseFloat(document.getElementById('mfp_val').value)||0;
-  const from=document.getElementById('mfp_from').value, to=document.getElementById('mfp_to').value;
-  if(!from||!to){ fillMFPSelects(); return; }
-  const base=val*mfpUnits[cat][from];
-  const result=base/mfpUnits[cat][to];
-  document.getElementById('mfp_result').textContent = `${val} ${from} = ${result.toFixed(5)} ${to}`;
-}
-function calcAV(){
-  const w=parseFloat(document.getElementById('av_w').value)||0;
-  const h=parseFloat(document.getElementById('av_h').value)||0;
-  const d=parseFloat(document.getElementById('av_d').value);
-  const area=w*h;
-  let txt=`Area: ${area.toFixed(4)} m²`;
-  if(d){ txt+=` · Volume: ${(area*d).toFixed(4)} m³`; }
-  document.getElementById('av_result').textContent=txt;
-}
-function calcCircle(){
-  const r=parseFloat(document.getElementById('circ_r').value)||0;
-  const h=parseFloat(document.getElementById('circ_h').value);
-  const area=Math.PI*r*r;
-  const circ=2*Math.PI*r;
-  let txt=`Area: ${area.toFixed(4)} m² · Circumference: ${circ.toFixed(4)} m`;
-  if(h){ txt+=` · Volume: ${(area*h).toFixed(4)} m³`; }
-  document.getElementById('circ_result').textContent=txt;
-}
-function calcOhm(changed){
-  const vEl=document.getElementById('ohm_v'), iEl=document.getElementById('ohm_i'), rEl=document.getElementById('ohm_r');
-  let v=parseFloat(vEl.value), i=parseFloat(iEl.value), r=parseFloat(rEl.value);
-  const out=document.getElementById('ohm_result');
-  if(changed!=='r' && !isNaN(v) && !isNaN(i)){ r=v/i; rEl.value=isFinite(r)?r.toFixed(4):''; }
-  else if(changed!=='i' && !isNaN(v) && !isNaN(r)){ i=v/r; iEl.value=isFinite(i)?i.toFixed(4):''; }
-  else if(changed!=='v' && !isNaN(i) && !isNaN(r)){ v=i*r; vEl.value=isFinite(v)?v.toFixed(4):''; }
-  if(!isNaN(v)&&!isNaN(i)){ out.textContent = `V=${v} · I=${i} · R=${(v/i).toFixed(4)} · P=${(v*i).toFixed(4)} W`; }
-  else out.textContent='Enter any two values.';
-}
-function calcTri(){
-  const a=parseFloat(document.getElementById('tri_a').value)||0;
-  const b=parseFloat(document.getElementById('tri_b').value)||0;
-  const c=Math.sqrt(a*a+b*b);
-  const angleA=(Math.atan2(a,b)*180/Math.PI).toFixed(2);
-  const angleB=(90-angleA).toFixed(2);
-  document.getElementById('tri_result').textContent = `Hypotenuse: ${c.toFixed(4)} · ∠A: ${angleA}° · ∠B: ${angleB}°`;
-}
-function calcBeam(){
-  const P=parseFloat(document.getElementById('beam_p').value)||0;
-  const L=parseFloat(document.getElementById('beam_l').value)||0;
-  const EI=parseFloat(document.getElementById('beam_ei').value)||1;
-  const Mmax = P*L/4;
-  const Vmax = P/2;
-  const delta = (P*Math.pow(L,3))/(48*EI);
-  document.getElementById('beam_result').innerHTML =
-    `M_max: ${Mmax.toFixed(2)} N·m &nbsp;·&nbsp; V_max: ${Vmax.toFixed(2)} N &nbsp;·&nbsp; δ_max: ${delta.toFixed(6)} m`;
-}
-function calcCantilever(){
-  const P=parseFloat(document.getElementById('cant_p').value)||0;
-  const L=parseFloat(document.getElementById('cant_l').value)||0;
-  const EI=parseFloat(document.getElementById('cant_ei').value)||1;
-  const Mmax = P*L;
-  const Vmax = P;
-  const delta = (P*Math.pow(L,3))/(3*EI);
-  document.getElementById('cant_result').innerHTML =
-    `M_max: ${Mmax.toFixed(2)} N·m &nbsp;·&nbsp; V_max: ${Vmax.toFixed(2)} N &nbsp;·&nbsp; δ_max: ${delta.toFixed(6)} m`;
-}
-
-function pageFormulas(query){
-  if(state.activeFormula){
-    const f = state.formulas.find(x=>x.id===state.activeFormula);
-    if(!f){ state.activeFormula=null; }
-    else return pageFormulaDetail(f);
-  }
-  const q=(query||'').toLowerCase();
-  const cats=[...new Set(state.formulas.map(f=>f.category))];
-  const filtered = q ? state.formulas.filter(f=>f.name.toLowerCase().includes(q)||f.formula.toLowerCase().includes(q)) : state.formulas;
-  return `
-  <h1 class="page-title">Formula Library</h1>
-  <p class="page-sub">Quick reference, searchable. Click any formula for worked examples.</p>
   <div class="panel">
-    <div class="panel-title">Add Formula</div>
+    <div class="panel-title">Add formula</div>
     <div class="row">
-      <input id="newFCat" placeholder="Category" style="flex:1;">
-      <input id="newFName" placeholder="Name" style="flex:1;">
-      <input id="newFFormula" placeholder="Formula" style="flex:2;">
+      <div style="flex:1;min-width:110px;"><label>Category</label><input id="fCat" placeholder="Chem"></div>
+      <div style="flex:1;min-width:130px;"><label>Name</label><input id="fName" placeholder="Boyle's Law"></div>
+      <div style="flex:2;min-width:150px;"><label>Formula</label><input id="fBody" placeholder="P1 V1 = P2 V2"></div>
       <button class="btn" onclick="addFormula()">Add</button>
     </div>
   </div>
-  ${cats.map(c=>{
-    const items=filtered.filter(f=>f.category===c);
-    if(!items.length) return '';
-    return `<div class="panel">
-      <div class="panel-title">${c}</div>
-      ${items.map(f=>`
-        <div class="list-item" style="cursor:pointer" onclick="state.activeFormula=${f.id};render()">
-          <div>${f.name}<div class="muted" style="font-family:'JetBrains Mono';">${f.formula}</div></div>
-          <button class="x-btn" onclick="event.stopPropagation();removeItem('formulas',${f.id})">✕</button>
-        </div>`).join('')}
-    </div>`;
-  }).join('') || '<p class="muted">No matches.</p>'}`;
-}
-function pageFormulaDetail(f){
-  const examples = f.examples || [];
-  return `
-  <h1 class="page-title">${f.name}</h1>
-  <p class="page-sub">${f.category}</p>
-  <div class="panel">
-    <div class="panel-title">Formula</div>
-    <div class="calc-result" style="font-family:'JetBrains Mono';">${f.formula}</div>
-  </div>
-  <div class="panel">
-    <div class="panel-title">Worked Examples</div>
-    ${examples.length ? examples.map((ex,i)=>`
+  ${cats.map(c=>`<div class="panel">
+    <div class="panel-title">${esc(c)}</div>
+    ${state.formulas.filter(f=>f.cat===c).map(f=>`
       <div class="list-item">
-        <div><span class="tag cyan" style="margin-right:8px;">${i+1}</span>${ex}</div>
-        <button class="x-btn" onclick="removeExample(${f.id},${i})">✕</button>
-      </div>`).join('') : '<p class="muted">No examples yet — add one below.</p>'}
-    <div class="row" style="margin-top:12px;">
-      <input id="newExample" placeholder="Add your own worked example..." style="flex:1;">
-      <button class="btn" onclick="addExample(${f.id})">Add</button>
-    </div>
-  </div>
-  <button class="btn secondary" onclick="state.activeFormula=null;render()">Back to Library</button>`;
-}
-function addExample(id){
-  const val=document.getElementById('newExample').value.trim();
-  if(!val) return;
-  const f=state.formulas.find(x=>x.id===id);
-  if(!f.examples) f.examples=[];
-  f.examples.push(val);
-  render();
-}
-function removeExample(id,idx){
-  const f=state.formulas.find(x=>x.id===id);
-  f.examples.splice(idx,1);
-  render();
+        <div><div class="ttl">${esc(f.name)}</div><div class="muted" style="font-family:'JetBrains Mono';">${esc(f.f)}</div></div>
+        <button class="x-btn" onclick="delFormula(${f.id})">&#10005;</button>
+      </div>`).join('')}
+  </div>`).join('')}`;
 }
 function addFormula(){
-  const category=document.getElementById('newFCat').value.trim()||'General';
-  const name=document.getElementById('newFName').value.trim();
-  const formula=document.getElementById('newFFormula').value.trim();
-  if(!name||!formula) return;
-  state.formulas.push({id:uid('formulas'),category,name,formula,examples:[]});
+  const name=document.getElementById('fName').value.trim(), body=document.getElementById('fBody').value.trim();
+  if(!name||!body)return;
+  state.formulas.push({id:uid('formulas'),cat:document.getElementById('fCat').value.trim()||'General',name:name,f:body});
   render();
 }
-
-function pageFiles(){
-  return `
-  <h1 class="page-title">Project Files</h1>
-  <p class="page-sub">Index of project deliverables.</p>
-  <div class="panel">
-    <div class="panel-title">Add File Entry</div>
-    <div class="row">
-      <input id="newFileName" placeholder="filename.ext" style="flex:2;">
-      <input id="newFileProject" placeholder="Project name" style="flex:2;">
-      <button class="btn" onclick="addFile()">Add</button>
-    </div>
-  </div>
-  <div class="panel">
-    ${state.files.map(f=>`
-      <div class="list-item">
-        <div>🗂 ${f.name}<div class="muted">${f.project} · ${f.date}</div></div>
-        <button class="x-btn" onclick="removeItem('files',${f.id})">✕</button>
-      </div>`).join('') || '<p class="muted">No files indexed yet.</p>'}
-  </div>`;
+function delFormula(id){state.formulas=state.formulas.filter(f=>f.id!==id);render();}
+const L2M={m:1,ft:0.3048,in:0.0254,mm:0.001,cm:0.01,km:1000,mi:1609.344};
+function calcUnit(){
+  const v=parseFloat(document.getElementById('uc_val').value)||0;
+  const f=document.getElementById('uc_from').value,t=document.getElementById('uc_to').value;
+  document.getElementById('uc_result').textContent=v+' '+f+' = '+(v*L2M[f]/L2M[t]).toFixed(5)+' '+t;
 }
-function addFile(){
-  const name=document.getElementById('newFileName').value.trim();
-  const project=document.getElementById('newFileProject').value.trim()||'Untitled';
-  if(!name) return;
-  state.files.push({id:uid('files'),name,project,date:new Date().toISOString().slice(0,10)});
-  render();
+const MFP={mass:{kg:1,g:.001,lb:.453592,oz:.0283495,ton:1000},force:{N:1,kN:1000,lbf:4.44822,kgf:9.80665},pressure:{Pa:1,kPa:1000,MPa:1e6,bar:1e5,psi:6894.76,atm:101325}};
+function fillMFP(){
+  const c=document.getElementById('mfp_cat').value,u=Object.keys(MFP[c]);
+  document.getElementById('mfp_from').innerHTML=u.map(x=>'<option>'+x+'</option>').join('');
+  document.getElementById('mfp_to').innerHTML=u.map(x=>'<option>'+x+'</option>').join('');
+  document.getElementById('mfp_to').selectedIndex=1;
 }
-
-function pageBookmarks(){
-  return `
-  <h1 class="page-title">Bookmarks / Resources</h1>
-  <p class="page-sub">Links worth keeping.</p>
-  <div class="panel">
-    <div class="panel-title">Add Bookmark</div>
-    <div class="row">
-      <input id="newBmTitle" placeholder="Title" style="flex:1;">
-      <input id="newBmUrl" placeholder="https://..." style="flex:2;">
-      <input id="newBmTag" placeholder="tag" style="flex:1;">
-      <button class="btn" onclick="addBookmark()">Add</button>
-    </div>
-  </div>
-  <div class="panel">
-    ${state.bookmarks.map(b=>`
-      <div class="list-item">
-        <div><a href="${b.url}" target="_blank">${b.title}</a><div class="muted">${b.url}</div></div>
-        <div class="row" style="align-items:center;">
-          <span class="tag amber">${b.tag}</span>
-          <button class="x-btn" onclick="removeItem('bookmarks',${b.id})">✕</button>
-        </div>
-      </div>`).join('') || '<p class="muted">No bookmarks yet.</p>'}
-  </div>`;
+function calcMFP(){
+  const c=document.getElementById('mfp_cat').value;
+  const f=document.getElementById('mfp_from').value,t=document.getElementById('mfp_to').value;
+  if(!f||!t)return;
+  const v=parseFloat(document.getElementById('mfp_val').value)||0;
+  document.getElementById('mfp_result').textContent=v+' '+f+' = '+(v*MFP[c][f]/MFP[c][t]).toFixed(5)+' '+t;
 }
-function addBookmark(){
-  const title=document.getElementById('newBmTitle').value.trim();
-  const url=document.getElementById('newBmUrl').value.trim();
-  const tag=document.getElementById('newBmTag').value.trim()||'general';
-  if(!title||!url) return;
-  state.bookmarks.push({id:uid('bookmarks'),title,url,tag});
-  render();
+function calcAV(){
+  const w=parseFloat(document.getElementById('av_w').value)||0,h=parseFloat(document.getElementById('av_h').value)||0,d=parseFloat(document.getElementById('av_d').value);
+  const a=w*h;let s='Area: '+a.toFixed(4)+' m2';
+  if(d)s+='  |  Volume: '+(a*d).toFixed(4)+' m3';
+  document.getElementById('av_result').textContent=s;
+}
+function calcTri(){
+  const a=parseFloat(document.getElementById('tri_a').value)||0,b=parseFloat(document.getElementById('tri_b').value)||0;
+  const c=Math.sqrt(a*a+b*b),A=Math.atan2(a,b)*180/Math.PI;
+  document.getElementById('tri_result').textContent='c: '+c.toFixed(4)+'  |  A: '+A.toFixed(2)+'deg  |  B: '+(90-A).toFixed(2)+'deg';
 }
 
+// ===== MEMORIES =====
+let pendingImg=null;
 function pageMemories(){
   return `
-  <h1 class="page-title">Memories 🖼</h1>
-  <p class="page-sub">Little snapshots worth keeping — photos, screenshots, whatever matters to you.</p>
+  <h1 class="page-title">Memories</h1>
+  <p class="page-sub">Snapshots worth keeping. Saved on this browser only.</p>
   <div class="panel">
-    <div class="panel-title">Add a Memory</div>
-    <div class="upload-drop" onclick="document.getElementById('memFileInput').click()">
-      📷 Click to choose a picture
-      <input type="file" id="memFileInput" accept="image/*" class="hidden" onchange="handleMemoryFile(event)">
+    <div class="panel-title">Add</div>
+    <div class="row">
+      <button class="btn secondary" onclick="document.getElementById('memFile').click()">Choose picture</button>
+      <input type="file" id="memFile" accept="image/*" class="hidden" onchange="pickImg(event)">
+      <div style="flex:1;min-width:160px;"><input id="memCap" placeholder="Caption"></div>
     </div>
-    <div class="field" style="margin-top:12px;">
-      <label>Caption</label>
-      <input id="memCaption" placeholder="What's this memory about?">
-    </div>
-    <div id="memPreviewWrap"></div>
+    <div id="memPrev"></div>
   </div>
-  <div class="memory-grid">
+  <div class="grid-3">
     ${state.memories.slice().reverse().map(m=>`
-      <div class="memory-card">
-        <button class="x-btn" onclick="removeMemory('${m.id}')">✕</button>
-        <img src="${m.img}">
-        <div class="cap">${m.caption||'Untitled'}<div class="muted">${m.date}</div></div>
-      </div>`).join('') || '<p class="muted">No memories saved yet — add your first one above.</p>'}
+      <div class="panel" style="padding:0;overflow:hidden;position:relative;">
+        <button class="x-btn" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.5);border-radius:50%;color:#fff;" onclick="delMemory('${esc(m.id)}')">&#10005;</button>
+        <img src="${esc(m.img)}" style="width:100%;height:150px;object-fit:cover;display:block;">
+        <div style="padding:9px 11px;font-size:12px;">${esc(m.caption||'Untitled')}<div class="muted">${esc(m.date)}</div></div>
+      </div>`).join('')||'<p class="muted">Nothing saved yet.</p>'}
   </div>`;
 }
-let pendingMemoryImg=null;
-function handleMemoryFile(e){
-  const file=e.target.files[0];
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=()=>{
-    pendingMemoryImg=reader.result;
-    document.getElementById('memPreviewWrap').innerHTML =
-      `<div style="margin-top:12px;"><img src="${pendingMemoryImg}" style="max-width:160px;border-radius:var(--radius);"></div>
-       <button class="btn" style="margin-top:10px;" onclick="saveMemory()">Save Memory</button>`;
+function downscale(url,max,q){
+  max=max||900;q=q||.8;
+  return new Promise(function(res){
+    const i=new Image();
+    i.onload=function(){
+      let w=i.width,h=i.height;const k=Math.min(1,max/Math.max(w,h));
+      w=Math.round(w*k);h=Math.round(h*k);
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(i,0,0,w,h);
+      try{res(c.toDataURL('image/jpeg',q));}catch(e){res(url);}
+    };
+    i.onerror=function(){res(url);};
+    i.src=url;
+  });
+}
+function pickImg(e){
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=function(){
+    downscale(r.result).then(function(img){
+      pendingImg=img;
+      document.getElementById('memPrev').innerHTML=
+        '<div style="margin-top:12px;"><img src="'+pendingImg+'" style="max-width:150px;border-radius:var(--radius);"></div>'+
+        '<div class="muted" style="margin-top:6px;">~'+Math.round(pendingImg.length*.75/1024)+' KB</div>'+
+        '<button class="btn" style="margin-top:10px;" onclick="saveMemory()">Save</button>';
+    });
   };
-  reader.readAsDataURL(file);
+  r.readAsDataURL(f);
 }
-async function saveMemory(){
-  if(!pendingMemoryImg) return;
-  const caption=document.getElementById('memCaption').value.trim();
-  const item={id:'m'+Date.now(), caption, date:new Date().toISOString().slice(0,10), img:pendingMemoryImg};
-  state.memories.push(item);
-  try{ await window.storage.set('memory:'+item.id, JSON.stringify(item), false); }catch(e){}
-  await saveMemoryIndex();
-  pendingMemoryImg=null;
-  render();
+function saveMemory(){
+  if(!pendingImg)return;
+  const cap=document.getElementById('memCap');
+  state.memories.push({id:'m'+Date.now(),caption:cap?cap.value.trim():'',date:isoToday(),img:pendingImg});
+  if(!DB.set(K,snapshot())){state.memories.pop();toast('Storage full - not saved',true);render();return;}
+  pendingImg=null;render();
 }
-async function removeMemory(id){
-  state.memories = state.memories.filter(m=>m.id!==id);
-  try{ await window.storage.delete('memory:'+id, false); }catch(e){}
-  await saveMemoryIndex();
-  render();
+function delMemory(id){state.memories=state.memories.filter(m=>m.id!==id);render();}
+
+// ===== SEARCH =====
+function pageSearch(){
+  const q=(document.getElementById('globalSearch').value||'').toLowerCase().trim();
+  const r=[];
+  state.subjects.forEach(s=>{if((s.code+' '+s.name).toLowerCase().indexOf(q)>=0)r.push({t:'Subject',l:s.code+' - '+s.name,p:'schedule'});});
+  state.todos.forEach(t=>{if(t.text.toLowerCase().indexOf(q)>=0)r.push({t:'Task',l:t.text,p:'todo'});});
+  state.notes.forEach(n=>{if((n.title+' '+n.body).toLowerCase().indexOf(q)>=0)r.push({t:'Note',l:n.title,p:'notes',n:n.id});});
+  state.formulas.forEach(f=>{if((f.name+' '+f.f).toLowerCase().indexOf(q)>=0)r.push({t:'Formula',l:f.name+' - '+f.f,p:'tools'});});
+  window.__res=r;
+  return `
+  <h1 class="page-title">Search</h1>
+  <p class="page-sub">"${esc(q)}" &mdash; ${r.length} match${r.length===1?'':'es'}</p>
+  <div class="panel">
+    ${r.map((x,i)=>'<div class="list-item" style="cursor:pointer" onclick="hitResult('+i+')"><div class="ttl">'+esc(x.l)+'</div><span class="tag cyan">'+esc(x.t)+'</span></div>').join('')||'<p class="muted">Nothing found.</p>'}
+  </div>`;
+}
+function hitResult(i){
+  const x=window.__res[i];
+  document.getElementById('globalSearch').value='';
+  state.page=x.p;state.activeNote=x.n||null;render();
 }
 
-function removeItem(key,id){
-  state[key]=state[key].filter(x=>x.id!==id);
-  render();
-}
-
-// ---------- GLOBAL SEARCH ----------
-function globalSearch(q){
-  q=q.toLowerCase();
-  if(!q) return null;
-  const results=[];
-  state.subjects.forEach(s=>{ if(s.name.toLowerCase().includes(q)) results.push({type:'Subject',label:s.name,go:()=>go('subjects')}); });
-  state.notes.forEach(n=>{ if(n.title.toLowerCase().includes(q)||n.body.toLowerCase().includes(q)) results.push({type:'Note',label:n.title,go:()=>{state.activeNote=n.id;go('notes');}}); });
-  state.formulas.forEach(f=>{ if(f.name.toLowerCase().includes(q)||f.formula.toLowerCase().includes(q)) results.push({type:'Formula',label:f.name,go:()=>go('formulas')}); });
-  state.bookmarks.forEach(b=>{ if(b.title.toLowerCase().includes(q)) results.push({type:'Bookmark',label:b.title,go:()=>go('bookmarks')}); });
-  state.assignments.forEach(a=>{ if(a.title.toLowerCase().includes(q)) results.push({type:'Task',label:a.title,go:()=>go('tracker')}); });
-  return results;
-}
-
-// ---------- PERSISTENCE ----------
-let saveTimer=null;
-function showToast(){
-  const t=document.getElementById('saveToast');
-  t.classList.add('show');
-  clearTimeout(t._h);
-  t._h=setTimeout(()=>t.classList.remove('show'),1200);
-}
-async function persistState(){
-  try{
-    const {memories, activeNote, ...rest} = state;
-    await window.storage.set('workshop-state', JSON.stringify(rest), false);
-    showToast();
-  }catch(e){ console.error('save failed',e); }
-}
-function queueSave(){
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(persistState, 500);
-}
-async function loadState(){
-  try{
-    const res = await window.storage.get('workshop-state', false);
-    if(res && res.value){
-      const saved = JSON.parse(res.value);
-      Object.assign(state, saved);
-    }
-  }catch(e){ /* no saved state yet, that's fine */ }
-  try{
-    const idx = await window.storage.get('memory-ids', false);
-    const ids = idx && idx.value ? JSON.parse(idx.value) : [];
-    const items = [];
-    for(const id of ids){
-      try{
-        const r = await window.storage.get('memory:'+id, false);
-        if(r && r.value) items.push(JSON.parse(r.value));
-      }catch(e){}
-    }
-    state.memories = items;
-  }catch(e){ state.memories = state.memories||[]; }
-}
-async function saveMemoryIndex(){
-  const ids = state.memories.map(m=>m.id);
-  try{ await window.storage.set('memory-ids', JSON.stringify(ids), false); }catch(e){}
-}
-
-// ---------- RENDER ----------
+// ===== RENDER =====
+const PAGES={today:pageToday,schedule:pageSchedule,todo:pageTodo,notes:pageNotes,grades:pageGrades,tools:pageTools,memories:pageMemories,sync:pageSync,search:pageSearch};
 function render(){
   renderNav();
-  const v=document.getElementById('view');
-  switch(state.page){
-    case 'dashboard': v.innerHTML=pageDashboard(); break;
-    case 'subjects': v.innerHTML=pageSubjects(); break;
-    case 'notes': v.innerHTML=pageNotes(); break;
-    case 'pdfs': v.innerHTML=pagePdfs(); break;
-    case 'tracker': v.innerHTML=pageTracker(); break;
-    case 'gpa': v.innerHTML=pageGpa(); break;
-    case 'calc': v.innerHTML=pageCalc(); fillMFPSelects(); calcUnit(); calcMFP(); calcAV(); calcCircle(); calcOhm(); calcTri(); calcBeam(); calcCantilever(); break;
-    case 'formulas': v.innerHTML=pageFormulas(); break;
-    case 'files': v.innerHTML=pageFiles(); break;
-    case 'bookmarks': v.innerHTML=pageBookmarks(); break;
-    case 'memories': v.innerHTML=pageMemories(); break;
-    case 'search': v.innerHTML=renderSearchResults(); break;
-  }
-  queueSave();
+  document.getElementById('view').innerHTML=(PAGES[state.page]||pageToday)();
+  if(state.page==='tools'){fillMFP();calcUnit();calcMFP();calcAV();calcTri();}
+  syncPill();
+  if(state.page!=='search')queueSave();
 }
-function renderSearchResults(){
-  const q=document.getElementById('globalSearch')?document.getElementById('globalSearch').value:'';
-  const results=globalSearch(q)||[];
-  window.__searchResults = results;
-  return `
-  <h1 class="page-title">Search Results</h1>
-  <p class="page-sub">"${q}" — ${results.length} match(es)</p>
-  <div class="panel">
-    ${results.map((r,i)=>`
-      <div class="list-item" style="cursor:pointer" onclick="window.__searchResults[${i}].go()">
-        <div>${r.label}</div><span class="tag cyan">${r.type}</span>
-      </div>`).join('') || '<p class="muted">No matches.</p>'}
-  </div>`;
-}
-
-document.getElementById('globalSearch').addEventListener('input',e=>{
-  if(e.target.value.trim()){ state.page='search'; }
-  else if(state.page==='search'){ state.page='dashboard'; }
+document.getElementById('globalSearch').addEventListener('input',function(e){
+  if(e.target.value.trim())state.page='search';
+  else if(state.page==='search')state.page='today';
   render();
-  document.getElementById('globalSearch').value=e.target.value;
-  document.getElementById('globalSearch').focus();
 });
-
-document.getElementById('themeToggle').addEventListener('click',()=>{
+document.getElementById('themeToggle').addEventListener('click',function(){
   const b=document.body;
-  b.dataset.theme = b.dataset.theme==='dark' ? 'light' : 'dark';
+  b.dataset.theme=(b.dataset.theme==='dark')?'light':'dark';
+  try{localStorage.setItem(KT,b.dataset.theme);}catch(e){}
 });
-
-function openSidebar(){
-  document.getElementById('sidebar').classList.add('open');
-  document.getElementById('sidebarBackdrop').classList.add('show');
-}
-function closeSidebar(){
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebarBackdrop').classList.remove('show');
-}
-document.getElementById('hamburgerBtn').addEventListener('click', openSidebar);
-
-(async function boot(){
-  document.getElementById('view').innerHTML = '<p class="muted">Loading your workspace...</p>';
-  await loadState();
-  render();
-})();
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('backdrop').classList.add('show');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('backdrop').classList.remove('show');}
+document.getElementById('hamburgerBtn').addEventListener('click',openSidebar);
+load();render();
+if(sync.token&&sync.gistId)gistPull(true);
+setInterval(syncPill,30000);
 </script>
 </body>
 </html>
