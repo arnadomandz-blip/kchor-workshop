@@ -2,11 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1d1b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Workshop">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <title>Workshop</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Patrick+Hand&family=Courier+Prime:wght@400;700&display=swap');
@@ -342,6 +345,49 @@ input[type=date]{color-scheme:dark;}
 }
 .toast.show{opacity:1;}
 
+/* ── MOBILE: bottom tab bar, the app's spine on a phone ── */
+.tabbar{display:none;}
+@media(max-width:860px){
+  .tabbar{
+    display:grid;grid-template-columns:repeat(5,1fr);
+    position:fixed;left:0;right:0;bottom:0;z-index:70;
+    background:linear-gradient(180deg,#8a5a32,#6b4324 45%,#4e3018);
+    border-top:2px solid rgba(0,0,0,.45);
+    box-shadow:0 -4px 16px rgba(0,0,0,.45);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  [data-theme="light"] .tabbar{background:linear-gradient(180deg,#c3c7cb,#a4a9ae);}
+  .tab{
+    background:none;border:none;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    padding:8px 2px 7px;color:#c9b79c;font-family:var(--font-body);font-size:12px;
+    text-shadow:none;position:relative;-webkit-tap-highlight-color:transparent;
+  }
+  [data-theme="light"] .tab{color:#4a4f54;}
+  .tab .ti{font-size:19px;line-height:1;}
+  .tab.on{color:#fff6e2;}
+  [data-theme="light"] .tab.on{color:#11151a;}
+  .tab.on::before{
+    content:'';position:absolute;top:0;left:22%;right:22%;height:3px;
+    background:var(--amber);border-radius:0 0 3px 3px;
+  }
+  .tab .tb{
+    position:absolute;top:4px;right:50%;margin-right:-22px;
+    background:var(--danger);color:#1c1d1b;font-family:var(--font-data);font-weight:700;
+    font-size:10px;line-height:1;padding:2px 5px;border-radius:999px;text-shadow:none;
+  }
+  .main{padding-bottom:calc(84px + env(safe-area-inset-bottom));}
+  .hamburger{display:none;}
+  .app{border-width:0;border-top:6px solid #6b4324;}
+  .sidebar{padding-top:calc(18px + env(safe-area-inset-top));}
+  .toast{bottom:calc(80px + env(safe-area-inset-bottom));}
+}
+/* installed app: no browser chrome, so reclaim the notch area */
+@media(display-mode:standalone){
+  .main{padding-top:calc(16px + env(safe-area-inset-top));}
+}
+#installBtn{display:none;}
+
 :focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
 ::-webkit-scrollbar{width:9px;height:9px;}
 ::-webkit-scrollbar-track{background:rgba(0,0,0,.35);}
@@ -368,11 +414,13 @@ input[type=date]{color-scheme:dark;}
     <div class="topbar">
       <button class="hamburger" id="hamburgerBtn">&#9776;</button>
       <div class="search"><span>&#128269;</span><input id="globalSearch" placeholder="Search subjects, tasks, notes, formulas..."></div>
+      <button class="icon-btn" id="installBtn" title="Install Workshop">install</button>
       <button class="icon-btn" id="themeToggle" title="Chalkboard / whiteboard">board</button>
     </div>
     <div id="view"></div>
   </main>
 </div>
+<nav class="tabbar" id="tabbar"></nav>
 <div class="toast" id="toast">Saved</div>
 
 <script>
@@ -662,6 +710,30 @@ const NAV=[
   {id:'sync',label:'Sync',icon:'\u2601\uFE0F'},
 ];
 function go(p){state.page=p;state.activeNote=null;render();closeSidebar();window.scrollTo(0,0);}
+const TABS=[
+  {id:'today',label:'Today',icon:'\u{1F3E0}'},
+  {id:'schedule',label:'Sched',icon:'\u{1F5D3}'},
+  {id:'todo',label:'To-Do',icon:'\u2705'},
+  {id:'notes',label:'Notes',icon:'\u{1F4DD}'},
+  {id:'more',label:'More',icon:'\u2630'},
+];
+const MORE_PAGES=['grades','tools','memories','sync'];
+function tabTap(id){
+  if(id==='more'){openSidebar();return;}
+  go(id);
+}
+function renderTabs(){
+  const el=document.getElementById('tabbar');
+  if(!el)return;
+  const b=urgentCount();
+  el.innerHTML=TABS.map(function(t){
+    const on=(t.id==='more')?(MORE_PAGES.indexOf(state.page)>=0):(state.page===t.id);
+    return '<button class="tab '+(on?'on':'')+'" onclick="tabTap(\''+t.id+'\')">'+
+      '<span class="ti">'+t.icon+'</span>'+t.label+
+      ((t.id==='todo'&&b)?'<span class="tb">'+b+'</span>':'')+'</button>';
+  }).join('');
+}
+
 function renderNav(){
   const b=urgentCount();
   document.getElementById('nav').innerHTML=NAV.map(n=>
@@ -1121,7 +1193,7 @@ function hitResult(i){
 // ===== RENDER =====
 const PAGES={today:pageToday,schedule:pageSchedule,todo:pageTodo,notes:pageNotes,grades:pageGrades,tools:pageTools,memories:pageMemories,sync:pageSync,search:pageSearch};
 function render(){
-  renderNav();
+  renderNav();renderTabs();
   document.getElementById('view').innerHTML=(PAGES[state.page]||pageToday)();
   if(state.page==='tools'){fillMFP();calcUnit();calcMFP();calcAV();calcTri();}
   syncPill();
@@ -1140,6 +1212,51 @@ document.getElementById('themeToggle').addEventListener('click',function(){
 function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('backdrop').classList.add('show');}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('backdrop').classList.remove('show');}
 document.getElementById('hamburgerBtn').addEventListener('click',openSidebar);
+// deep links: index.html#todo, and manifest shortcuts
+(function(){
+  const h=(location.hash||'').replace('#','');
+  if(h&&PAGES[h]&&h!=='search')state.page=h;
+})();
+window.addEventListener('hashchange',function(){
+  const h=(location.hash||'').replace('#','');
+  if(h&&PAGES[h]&&h!=='search')go(h);
+});
+
+// install prompt
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault();deferredPrompt=e;
+  const b=document.getElementById('installBtn');
+  if(b)b.style.display='block';
+});
+document.getElementById('installBtn').addEventListener('click',function(){
+  if(!deferredPrompt){
+    toast('On iPhone: Share, then Add to Home Screen',true);
+    return;
+  }
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(function(){
+    deferredPrompt=null;
+    document.getElementById('installBtn').style.display='none';
+  });
+});
+window.addEventListener('appinstalled',function(){
+  deferredPrompt=null;
+  const b=document.getElementById('installBtn');
+  if(b)b.style.display='none';
+  toast('Installed');
+});
+
+// offline support
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(function(){});
+  });
+}
+window.addEventListener('online',function(){
+  if(sync.token&&sync.gistId)gistPull(true);
+});
+
 load();render();
 if(sync.token&&sync.gistId)gistPull(true);
 setInterval(syncPill,30000);
