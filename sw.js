@@ -3,7 +3,7 @@
    HTML is network-first so a new deploy lands on the next online open.
    Google Fonts are cached on first use, then served from cache. */
 
-const VERSION = 'workshop-v2';
+const VERSION = 'workshop-v3';
 const SHELL   = VERSION + '-shell';
 const RUNTIME = VERSION + '-runtime';
 
@@ -33,6 +33,19 @@ self.addEventListener('activate', event => {
         keys.filter(k => k !== SHELL && k !== RUNTIME).map(k => caches.delete(k))
       ))
       .then(() => self.clients.claim())
+  );
+});
+
+// Tapping a reminder opens the app rather than a new tab.
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      for (const c of list) {
+        if ('focus' in c) return c.focus();
+      }
+      return self.clients.openWindow('./index.html');
+    })
   );
 });
 
