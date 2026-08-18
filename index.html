@@ -6,11 +6,11 @@
 <meta name="theme-color" content="#1c1d1b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Workshop">
+<meta name="apple-mobile-web-app-title" content="BSCE1-A2">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<title>Workshop</title>
+<title>BSCE1-A2</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Patrick+Hand&family=Courier+Prime:wght@400;700&display=swap');
 
@@ -399,7 +399,7 @@ input[type=date]{color-scheme:dark;}
 <body data-theme="dark">
 <div class="app">
   <aside class="sidebar" id="sidebar">
-    <div class="brand">Workshop<small>BSCE1-A2 · your study corner</small></div>
+    <div class="brand">BSCE1-A2<small>civil engineering · first year</small></div>
     <div id="nav"></div>
     <div class="sidebar-foot">
       <button class="mini-btn" onclick="exportData()">backup</button>
@@ -698,6 +698,181 @@ function pageSync(){
   </div>`;
 }
 
+// ===== ALERTS =====
+const KA='workshop:alerts';
+let alerts=DB.get(KA)||{on:false,classLead:15,taskHour:7,fired:{}};
+function saveAlerts(){DB.set(KA,alerts);}
+function notifyReady(){return ('Notification' in window)&&Notification.permission==='granted';}
+function fireNote(title,body,tag){
+  if(!notifyReady())return;
+  const opts={body:body,tag:tag,icon:'icon-192.png',badge:'icon-192.png',renotify:false};
+  if(navigator.serviceWorker&&navigator.serviceWorker.ready){
+    navigator.serviceWorker.ready.then(function(r){r.showNotification(title,opts);})
+      .catch(function(){try{new Notification(title,opts);}catch(e){}});
+  }else{try{new Notification(title,opts);}catch(e){}}
+}
+function alreadyFired(key){return alerts.fired[key]===isoToday();}
+function markFired(key){
+  alerts.fired[key]=isoToday();
+  const t=isoToday();
+  Object.keys(alerts.fired).forEach(function(k){if(alerts.fired[k]!==t)delete alerts.fired[k];});
+  saveAlerts();
+}
+function checkAlerts(){
+  if(!alerts.on||!notifyReady())return;
+  const now=nowMin(), day=todayName();
+  // class starting soon
+  classesOn(day).forEach(function(c){
+    const warn=c.m.s-alerts.classLead;
+    if(now>=warn&&now<c.m.s){
+      const key='c'+c.s.id+'-'+c.m.s;
+      if(!alreadyFired(key)){
+        markFired(key);
+        fireNote(c.s.code+' in '+(c.m.s-now)+' min', c.s.name+'  ·  '+c.m.room+'  ·  '+hhmm(c.m.s), key);
+      }
+    }
+  });
+  // deadlines, once past the morning hour
+  if(now>=alerts.taskHour*60){
+    const hit=openTodos().filter(function(t){
+      const n=daysUntil(t.due); return n!==null&&n<=0;
+    });
+    if(hit.length){
+      const key='due-'+hit.length;
+      if(!alreadyFired('due')){
+        markFired('due');
+        if(hit.length===1){
+          const t=hit[0];
+          fireNote(dueLabel(t)==='due today'?'Due today':'Overdue', t.text+'  ·  '+subjCode(t.subjectId), 'due');
+        }else{
+          fireNote(hit.length+' tasks need you',
+            hit.slice(0,3).map(function(t){return t.text;}).join('  ·  ')+(hit.length>3?'  ...':''),'due');
+        }
+      }
+    }
+  }
+  if(navigator.setAppBadge){
+    const n=urgentCount();
+    if(n)navigator.setAppBadge(n).catch(function(){}); else navigator.clearAppBadge().catch(function(){});
+  }
+}
+function askNotify(){
+  if(!('Notification' in window)){toast('This browser has no notifications',true);return;}
+  Notification.requestPermission().then(function(p){
+    if(p==='granted'){alerts.on=true;saveAlerts();render();fireNote('Reminders on','You will get a nudge before class and for deadlines.','hello');}
+    else{alerts.on=false;saveAlerts();render();toast('Permission denied \u2014 turn it on in browser settings',true);}
+  });
+}
+function alertsOff(){alerts.on=false;saveAlerts();render();}
+function setLead(v){alerts.classLead=parseInt(v)||15;saveAlerts();}
+function setTaskHour(v){alerts.taskHour=parseInt(v)||7;saveAlerts();}
+function testNote(){
+  if(!notifyReady()){toast('Turn reminders on first',true);return;}
+  fireNote('Test from BSCE1-A2','If you can see this, reminders work.','test');
+}
+
+// ---- calendar export: the reliable path ----
+function icsEsc(t){return String(t).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');}
+function p2(n){return String(n).padStart(2,'0');}
+function icsStamp(d){return d.getUTCFullYear()+p2(d.getUTCMonth()+1)+p2(d.getUTCDate())+'T'+p2(d.getUTCHours())+p2(d.getUTCMinutes())+'00Z';}
+function icsLocal(d,mins){
+  return d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'T'+p2(Math.floor(mins/60))+p2(mins%60)+'00';
+}
+function nextOccurrence(dayNames){
+  const map={Mon:1,Tue:2,Wed:3,Thu:4,Fri:5};
+  const today=new Date(); today.setHours(0,0,0,0);
+  let best=null;
+  dayNames.forEach(function(dn){
+    const want=map[dn]; if(!want)return;
+    let delta=(want-today.getDay()+7)%7;
+    const d=new Date(today); d.setDate(d.getDate()+delta);
+    if(!best||d<best)best=d;
+  });
+  return best||today;
+}
+function buildICS(){
+  const BY={Mon:'MO',Tue:'TU',Wed:'WE',Thu:'TH',Fri:'FR'};
+  const now=new Date();
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//BSCE1-A2//Workshop//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:BSCE1-A2'];
+  state.subjects.forEach(function(sub){
+    (sub.meets||[]).forEach(function(m,i){
+      const start=nextOccurrence(m.d);
+      L.push('BEGIN:VEVENT');
+      L.push('UID:class-'+sub.id+'-'+i+'@bsce1a2');
+      L.push('DTSTAMP:'+icsStamp(now));
+      L.push('DTSTART:'+icsLocal(start,m.s));
+      L.push('DTEND:'+icsLocal(start,m.e));
+      L.push('RRULE:FREQ=WEEKLY;COUNT=18;BYDAY='+m.d.map(function(x){return BY[x];}).filter(Boolean).join(','));
+      L.push('SUMMARY:'+icsEsc(sub.code));
+      L.push('LOCATION:'+icsEsc(m.room));
+      L.push('DESCRIPTION:'+icsEsc(sub.name));
+      L.push('BEGIN:VALARM','TRIGGER:-PT'+alerts.classLead+'M','ACTION:DISPLAY',
+             'DESCRIPTION:'+icsEsc(sub.code+' in '+alerts.classLead+' min'),'END:VALARM');
+      L.push('END:VEVENT');
+    });
+  });
+  openTodos().filter(function(t){return t.due;}).forEach(function(t){
+    const d=new Date(t.due+'T00:00:00');
+    L.push('BEGIN:VEVENT');
+    L.push('UID:task-'+t.id+'@bsce1a2');
+    L.push('DTSTAMP:'+icsStamp(now));
+    L.push('DTSTART:'+icsLocal(d,alerts.taskHour*60));
+    L.push('DTEND:'+icsLocal(d,alerts.taskHour*60+30));
+    L.push('SUMMARY:'+icsEsc(subjCode(t.subjectId).replace(/&amp;/g,'&')+': '+t.text));
+    L.push('BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY','DESCRIPTION:'+icsEsc('Due tomorrow: '+t.text),'END:VALARM');
+    L.push('BEGIN:VALARM','TRIGGER:-PT0M','ACTION:DISPLAY','DESCRIPTION:'+icsEsc('Due today: '+t.text),'END:VALARM');
+    L.push('END:VEVENT');
+  });
+  L.push('END:VCALENDAR');
+  return L.join('\r\n');
+}
+function downloadICS(){
+  const b=new Blob([buildICS()],{type:'text/calendar'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(b); a.download='bsce1a2-'+isoToday()+'.ics'; a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function pageAlerts(){
+  const perm=('Notification' in window)?Notification.permission:'unsupported';
+  const live=alerts.on&&perm==='granted';
+  const leads=[5,10,15,20,30,45,60];
+  const hours=[5,6,7,8,9,10];
+  return `
+  <h1 class="page-title">Reminders</h1>
+  <p class="page-sub">A nudge before class starts and when something is due.</p>
+
+  <div class="panel">
+    <div class="panel-title">In-app reminders</div>
+    <div class="calc-result" style="font-size:16px;">${live?'On':(perm==='denied'?'Blocked by your browser':'Off')}</div>
+    <div class="row" style="margin-top:14px;">
+      ${live?'<button class="btn secondary" onclick="alertsOff()">Turn off</button><button class="btn" onclick="testNote()">Send a test</button>'
+            :'<button class="btn" onclick="askNotify()">Turn on</button>'}
+    </div>
+    ${perm==='denied'?'<p class="muted" style="margin-top:12px;">You blocked notifications for this site. Reset it in your browser site settings, then come back.</p>':''}
+    <div class="row" style="margin-top:16px;">
+      <div style="flex:1;min-width:150px;"><label>Warn me before class</label>
+        <select onchange="setLead(this.value)">${leads.map(function(l){return '<option value="'+l+'" '+(alerts.classLead===l?'selected':'')+'>'+l+' minutes</option>';}).join('')}</select></div>
+      <div style="flex:1;min-width:150px;"><label>Deadline check at</label>
+        <select onchange="setTaskHour(this.value)">${hours.map(function(h){return '<option value="'+h+'" '+(alerts.taskHour===h?'selected':'')+'>'+hhmm(h*60)+'</option>';}).join('')}</select></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Read this before you rely on it</div>
+    <div class="md-preview">${md("This app has no server, so reminders only fire **while the app is open or sitting in the background**. Android holds it for a while after you switch away. iPhone drops it almost immediately.\n\nIf you need an alarm that always goes off, use the calendar export below. Your phone's own calendar handles it, even when the app is closed.")}</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Send to your phone calendar</div>
+    <p class="muted" style="margin:0 0 14px;">Downloads a .ics file with all ${state.subjects.length} subjects for the next 18 weeks, plus every task that has a due date. Open the file and your phone imports it. Alarms work offline, always.</p>
+    <div class="row">
+      <button class="btn" onclick="downloadICS()">Download calendar file</button>
+    </div>
+    <p class="muted" style="margin:12px 0 0;">Re-download whenever you add tasks. Importing again updates the same entries instead of duplicating them.</p>
+  </div>`;
+}
+
 // ===== NAV =====
 const NAV=[
   {id:'today',label:'Today',icon:'\u{1F3E0}'},
@@ -707,6 +882,7 @@ const NAV=[
   {id:'grades',label:'GPA',icon:'\u{1F9EE}'},
   {id:'tools',label:'Tools',icon:'\u{1F4D0}'},
   {id:'memories',label:'Memories',icon:'\u{1F5BC}'},
+  {id:'alerts',label:'Reminders',icon:'\u{1F514}'},
   {id:'sync',label:'Sync',icon:'\u2601\uFE0F'},
 ];
 function go(p){state.page=p;state.activeNote=null;render();closeSidebar();window.scrollTo(0,0);}
@@ -717,7 +893,7 @@ const TABS=[
   {id:'notes',label:'Notes',icon:'\u{1F4DD}'},
   {id:'more',label:'More',icon:'\u2630'},
 ];
-const MORE_PAGES=['grades','tools','memories','sync'];
+const MORE_PAGES=['grades','tools','memories','alerts','sync'];
 function tabTap(id){
   if(id==='more'){openSidebar();return;}
   go(id);
@@ -1191,7 +1367,7 @@ function hitResult(i){
 }
 
 // ===== RENDER =====
-const PAGES={today:pageToday,schedule:pageSchedule,todo:pageTodo,notes:pageNotes,grades:pageGrades,tools:pageTools,memories:pageMemories,sync:pageSync,search:pageSearch};
+const PAGES={today:pageToday,schedule:pageSchedule,todo:pageTodo,notes:pageNotes,grades:pageGrades,tools:pageTools,memories:pageMemories,alerts:pageAlerts,sync:pageSync,search:pageSearch};
 function render(){
   renderNav();renderTabs();
   document.getElementById('view').innerHTML=(PAGES[state.page]||pageToday)();
@@ -1260,6 +1436,11 @@ window.addEventListener('online',function(){
 load();render();
 if(sync.token&&sync.gistId)gistPull(true);
 setInterval(syncPill,30000);
+checkAlerts();
+setInterval(checkAlerts,60000);
+document.addEventListener('visibilitychange',function(){
+  if(!document.hidden){checkAlerts();if(sync.token&&sync.gistId)gistPull(true);}
+});
 </script>
 </body>
 </html>
